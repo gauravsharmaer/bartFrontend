@@ -12,15 +12,15 @@
 // } from "./config";
 
 // const App: React.FC = () => {
-//   const webcamRef = useRef<Webcam | null>(null);
-//   const [imageSrc, setImageSrc] = useState<string | null>(null);
-//   const [cameraOn, setCameraOn] = useState(false);
-//   const [email, setEmail] = useState("");
-//   const [name, setName] = useState("");
-//   const [password, setPassword] = useState("");
-//   const [confirmPassword, setConfirmPassword] = useState("");
-//   const [phoneNumber, setPhoneNumber] = useState("");
-//   const [imageLink, setImageLink] = useState("");
+// const webcamRef = useRef<Webcam | null>(null);
+// const [imageSrc, setImageSrc] = useState<string | null>(null);
+// const [cameraOn, setCameraOn] = useState(false);
+// const [email, setEmail] = useState("");
+// const [name, setName] = useState("");
+// const [password, setPassword] = useState("");
+// const [confirmPassword, setConfirmPassword] = useState("");
+// const [phoneNumber, setPhoneNumber] = useState("");
+// const [imageLink, setImageLink] = useState("");
 //   const videoConstraints = {
 //     facingMode: "user",
 //   };
@@ -278,8 +278,6 @@
 // };
 
 // export default App;
-
-import React from "react";
 
 const Home = () => {
   return <div>Home</div>;

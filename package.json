@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.654.0",
+    "@phosphor-icons/react": "^2.1.7",
     "autoprefixer": "^10.4.20",
     "aws-sdk": "^2.1691.0",
     "buffer": "^6.0.3",
