@@ -1,286 +1,289 @@
-// import React, { useEffect, useRef, useState } from "react";
-// import Webcam from "react-webcam";
-// import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-// import "./App.css";
-// import { Input } from "./components/ui/input";
-// import { z } from "zod";
-// import { Button } from "./components/ui/button";
-// import {
-//   REACT_APP_AWS_ACCESS_KEY_ID,
-//   REACT_APP_AWS_SECRET_ACCESS_KEY,
-//   REACT_APP_AWS_REGION,
-// } from "./config";
+import { useState, useRef, useEffect } from "react";
+import {
+  S3Client,
+  ListObjectsV2Command,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
+import {
+  RekognitionClient,
+  DetectFacesCommand,
+  CompareFacesCommand,
+} from "@aws-sdk/client-rekognition";
+import Webcam from "react-webcam";
+import { Buffer } from "buffer";
+import Eye from "../../assets/eye.svg";
+import Face from "../../assets/Face.gif";
 
-// const App: React.FC = () => {
-// const webcamRef = useRef<Webcam | null>(null);
-// const [imageSrc, setImageSrc] = useState<string | null>(null);
-// const [cameraOn, setCameraOn] = useState(false);
-// const [email, setEmail] = useState("");
-// const [name, setName] = useState("");
-// const [password, setPassword] = useState("");
-// const [confirmPassword, setConfirmPassword] = useState("");
-// const [phoneNumber, setPhoneNumber] = useState("");
-// const [imageLink, setImageLink] = useState("");
-//   const videoConstraints = {
-//     facingMode: "user",
-//   };
+import { awsConfig } from "../../utils/awsUtils";
+import { Attribute } from "@aws-sdk/client-rekognition";
 
-//   // Initialize S3 client globally
-//   const s3Client = new S3Client({
-//     region: REACT_APP_AWS_REGION,
-//     credentials: {
-//       accessKeyId: REACT_APP_AWS_ACCESS_KEY_ID,
-//       secretAccessKey: REACT_APP_AWS_SECRET_ACCESS_KEY,
-//     },
-//   });
+// Initialize AWS clients
+const s3Client = new S3Client(awsConfig);
+const rekognitionClient = new RekognitionClient(awsConfig);
 
-//   const capturePhoto = async () => {
-//     if (webcamRef.current) {
-//       const imageSrc = webcamRef.current.getScreenshot();
-//       setImageSrc(imageSrc as string);
+// interface HomeProps {
+//   onClose: () => void;
+//   onComplete: () => void;
+// }
 
-//       const stream = webcamRef.current.video?.srcObject as MediaStream;
-//       const tracks = stream.getTracks();
-//       tracks.forEach((track) => track.stop());
-//       setCameraOn(false);
-//     }
-//   };
-
-//   const validateSignUpSchema = (data: {
-//     name: string;
-//     email: string;
-//     password: string;
-//     confirmPassword: string;
-//     phoneNumber: string;
-//     image: string;
-//   }) => {
-//     const signUpSchema = z
-//       .object({
-//         name: z.string().nonempty("Name is required"),
-//         email: z.string().email("Invalid email address"),
-//         password: z.string().min(8, "Password must be at least 8 characters"),
-//         confirmPassword: z
-//           .string()
-//           .min(8, "Confirm Password must be at least 8 characters"),
-//         phoneNumber: z.string().nonempty("Phone number is required"),
-//         image: z.string().nonempty("Image is required"),
-//       })
-//       .refine((data) => data.password === data.confirmPassword, {
-//         message: "Passwords do not match",
-//         path: ["confirmPassword"],
-//       });
-
-//     return signUpSchema.safeParse(data);
-//   };
-
-//   const handleSignUp = async () => {
-//     const validationResponse = validateSignUpSchema({
-//       name,
-//       email,
-//       password,
-//       confirmPassword,
-//       phoneNumber,
-//       image: imageLink,
-//     });
-
-//     if (!validationResponse.success) {
-//       const errorMessages = validationResponse.error.errors
-//         .map((err) => err.message)
-//         .join(", ");
-//       throw new Error(errorMessages);
-//     }
-
-//     const url = `http://localhost:4000/api/users/register`;
-
-//     const response = await fetch(url, {
-//       method: "POST",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({
-//         name: name,
-//         email: email,
-//         password: password,
-//         confirmPassword: confirmPassword,
-//         phoneNumber: phoneNumber,
-//         image: imageLink,
-//       }),
-//     });
-
-//     if (!response.ok) {
-//       const data = await response.json();
-//       throw new Error(data.error_msg || "Error ");
-//     }
-
-//     const data = await response.json();
-//     return data;
-//   };
-
-//   // const handleSignUp = async () => {
-//   //   const url = `http://localhost:4000/api/users/register`;
-
-//   //   const response = await fetch(url, {
-//   //     method: "POST",
-//   //     headers: {
-//   //       "Content-Type": "application/json",
-//   //     },
-//   //     body: JSON.stringify({
-//   //       name: name,
-//   //       email: email,
-//   //       password: password,
-//   //       confirmPassword: confirmPassword,
-//   //       phoneNumber: phoneNumber,
-//   //       image: imageLink,
-//   //     }),
-//   //   });
-
-//   //   if (!response.ok) {
-//   //     const data = await response.json();
-//   //     throw new Error(data.error_msg || "Error ");
-//   //   }
-
-//   //   const data = await response.json();
-//   //   return data;
-//   // };
-
-//   useEffect(() => {
-//     uploadToAws();
-//   }, [imageSrc, email]);
-
-//   const uploadToAws = async () => {
-//     if (imageSrc && email) {
-//       const base64Image = imageSrc.split(",")[1];
-//       const binaryImage = atob(base64Image);
-//       const arrayBuffer = new ArrayBuffer(binaryImage.length);
-//       const uint8Array = new Uint8Array(arrayBuffer);
-
-//       for (let i = 0; i < binaryImage.length; i++) {
-//         uint8Array[i] = binaryImage.charCodeAt(i);
-//       }
-
-//       const blob = new Blob([uint8Array], { type: "image/jpeg" });
-
-//       const imageParams = {
-//         Bucket: "face-authen",
-//         Key: `facialdata/profile_images/${email}.jpg`,
-//         Body: blob,
-//         ContentType: "image/jpeg",
-//       };
-
-//       try {
-//         // Upload the image using the new AWS S3 V3 SDK
-//         const command = new PutObjectCommand(imageParams);
-//         const data = await s3Client.send(command);
-//         if (data) {
-//           const imageUrl = `https://face-authen.s3.us-east-1.amazonaws.com/facialdata/profile_images/${email}.jpg`;
-//           setImageLink(imageUrl);
-//           console.log("Image uploaded successfully. URL:", imageUrl);
-//         }
-//         // console.log("Image uploaded successfully:", data);
-//       } catch (error) {
-//         console.error("Error uploading image:", error);
-//       }
-//     }
-//   };
-
-//   const handleCaptureButtonClick = () => {
-//     setCameraOn(true);
-//   };
-
-//   return (
-//     <>
-//       <div className="flex flex-col gap-4 ">
-//         {/* <input
-//           placeholder="name"
-//           onChange={(e) => setName(e.target.value)}
-//           className="h-14 w-[360px] rounded-full p-7 border-none border-1  border-[#282829] bg-[#1D1D1D]
-//           text-[#AAAAAA]"
-//         />
-//         <input
-//           placeholder="phone"
-//           onChange={(e) => setPhoneNumber(e.target.value)}
-//         />
-//         <input placeholder="email" onChange={(e) => setEmail(e.target.value)} />
-
-//         <input
-//           placeholder="password"
-//           onChange={(e) => setPassword(e.target.value)}
-//         />
-//         <input
-//           placeholder="confirm password"
-//           onChange={(e) => setConfirmPassword(e.target.value)}
-//         /> */}
-
-//         <Input
-//           type="text"
-//           placeholder="Name"
-//           onChange={(e) => setName(e.target.value)}
-//         />
-//         <Input
-//           type="text"
-//           placeholder="Phone"
-//           onChange={(e) => setPhoneNumber(e.target.value)}
-//         />
-
-//         <Input
-//           type="email"
-//           placeholder="Email"
-//           onChange={(e) => setEmail(e.target.value)}
-//         />
-
-//         <Input
-//           type="password"
-//           placeholder="Password"
-//           onChange={(e) => setPassword(e.target.value)}
-//         />
-
-//         <Input
-//           type="password"
-//           placeholder="Confirm Password"
-//           onChange={(e) => setConfirmPassword(e.target.value)}
-//         />
-//       </div>
-//       <div>
-//         {!cameraOn && (
-//           <Button onClick={handleCaptureButtonClick}>
-//             Activate Camera & Capture Photo
-//           </Button>
-//         )}
-
-//         {cameraOn && (
-//           <div>
-//             <Webcam
-//               audio={false}
-//               height={400}
-//               ref={webcamRef}
-//               screenshotFormat="image/jpeg"
-//               width={400}
-//               videoConstraints={videoConstraints}
-//             />
-//             <button onClick={capturePhoto}>Capture Photo</button>
-//           </div>
-//         )}
-
-//         {imageSrc && (
-//           <div>
-//             <h2>Captured Photo:</h2>
-//             <img src={imageSrc} alt="Captured" />
-//           </div>
-//         )}
-//       </div>
-
-//       {/* <button onClick={handleSignUp}>SignUp</button> */}
-//       <Button onClick={handleSignUp} className="bg-red-500">
-//         SignUp
-//       </Button>
-//     </>
-//   );
-// };
-
-// export default App;
-
+// Main Home component for facial recognition and liveness detection
 const Home = () => {
-  return <div>Home</div>;
+  // State management using useState hooks
+  const [error, setError] = useState("");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [instruction, setInstruction] = useState<string | JSX.Element>("");
+  const [progress, setProgress] = useState(0);
+  const [showGif, setShowGif] = useState(false);
+
+  // Refs for managing webcam, intervals, and action sequence
+  const webcamRef = useRef<Webcam>(null);
+  const analyzeIntervalRef = useRef<number | null>(null);
+  const blinkCountRef = useRef<number>(0);
+  const actionSequenceRef = useRef<string[]>([]);
+
+  // Start liveness check on component mount
+  useEffect(() => {
+    startLivenessCheck();
+    return () => stopAnalysis();
+  }, []);
+
+  // Function to start the liveness check process
+  const startLivenessCheck = () => {
+    setIsAnalyzing(true);
+    setProgress(0);
+    blinkCountRef.current = 0;
+    actionSequenceRef.current = generateActionSequence();
+    setInstruction(getNextInstruction() || "");
+    analyzeIntervalRef.current = window.setInterval(analyzeFrame, 500);
+  };
+
+  // Function to stop the ongoing analysis
+  const stopAnalysis = () => {
+    setIsAnalyzing(false);
+    if (analyzeIntervalRef.current) {
+      clearInterval(analyzeIntervalRef.current);
+    }
+  };
+
+  // Generate a random sequence of actions for liveness check
+  const generateActionSequence = (): string[] => {
+    const actions = ["left", "right", "blink"];
+    return actions.sort(() => 0.5 - Math.random()).slice(0, 3);
+  };
+
+  // Handle successful authentication
+  // const handleAuthSuccess = () => {
+  //   onComplete();
+  //   onClose();
+  // };
+
+  // Get the next instruction based on the current action
+  const getNextInstruction = (): string | JSX.Element | null => {
+    const action = actionSequenceRef.current[0];
+    if (action === "Verifying...") {
+      setShowGif(true);
+      return null;
+    }
+
+    const instructions: { [key: string]: string | JSX.Element } = {
+      right: "Please turn your head to the left",
+      left: "Please turn your head to the right",
+      blink: (
+        <div className="flex items-center">
+          <img
+            src={Eye}
+            alt="Eye Blink"
+            className="w-6 h-6 mr-5 ml-20 flex justify-center items-center"
+          />
+          Please blink twice
+        </div>
+      ),
+    };
+
+    return instructions[action] || null;
+  };
+
+  const analyzeFrame = async () => {
+    if (!webcamRef.current) return;
+
+    const imageSrc = webcamRef.current.getScreenshot();
+    if (!imageSrc) return;
+
+    const base64Image = imageSrc.split(",")[1];
+    const binaryImage = Buffer.from(base64Image, "base64");
+
+    try {
+      const detectFacesParams = {
+        Image: { Bytes: binaryImage },
+        Attributes: ["ALL"] as Attribute[],
+      };
+      const detectFacesCommand = new DetectFacesCommand(detectFacesParams);
+      const detectFacesResult = await rekognitionClient.send(
+        detectFacesCommand
+      );
+
+      if (
+        detectFacesResult.FaceDetails &&
+        detectFacesResult.FaceDetails.length > 0
+      ) {
+        const faceDetails = detectFacesResult.FaceDetails[0];
+        const currentAction = actionSequenceRef.current[0];
+
+        if (currentAction === "blink") {
+          handleBlinkDetection(faceDetails);
+        } else {
+          handleHeadMovement(faceDetails, currentAction);
+        }
+
+        if (actionSequenceRef.current.length === 0) {
+          await handlePhotoLogin(binaryImage);
+        }
+      } else {
+        setTimeout(() => {
+          setError("No face detected. Please ensure your face is visible.");
+        }, 5000);
+      }
+    } catch (error) {
+      console.error("Error during face analysis:", error);
+      setError("Face analysis failed. Please try again.");
+    }
+  };
+
+  const handleBlinkDetection = (faceDetails: FaceDetails) => {
+    if (faceDetails.EyesOpen?.Value === false) {
+      blinkCountRef.current++;
+      if (blinkCountRef.current >= 2) {
+        actionCompleted();
+      }
+    }
+  };
+
+  const handleHeadMovement = (
+    faceDetails: FaceDetails,
+    expectedAction: string
+  ) => {
+    const { Pose } = faceDetails;
+    const threshold = 15;
+
+    const actionDetected =
+      expectedAction === "left"
+        ? Pose?.Yaw <= -threshold
+        : Pose?.Yaw >= threshold;
+
+    if (actionDetected) {
+      actionCompleted();
+    }
+  };
+
+  // Mark the current action as completed and move to the next
+  const actionCompleted = () => {
+    actionSequenceRef.current.shift();
+    setProgress((prevProgress) => prevProgress + 100 / 3);
+    setInstruction(
+      actionSequenceRef.current.length > 0
+        ? getNextInstruction() || ""
+        : "Verifying..."
+    );
+  };
+
+  // Handle photo login process
+  const handlePhotoLogin = async (binaryImage: Buffer) => {
+    try {
+      // List all user photos in the S3 bucket
+      const allUsersParams = {
+        Bucket: "face-authen",
+        Prefix: "facialdata/profile_images/",
+      };
+      const listObjectsCommand = new ListObjectsV2Command(allUsersParams);
+      const allUsers = await s3Client.send(listObjectsCommand);
+      // let faceMatchFound = false;
+
+      if (!allUsers.Contents) {
+        throw new Error("No user photos found");
+      }
+
+      for (const item of allUsers.Contents) {
+        if (!item.Key) continue;
+
+        const getObjectCommand = new GetObjectCommand({
+          Bucket: "face-authen",
+          Key: item.Key,
+        });
+        const photoData = await s3Client.send(getObjectCommand);
+
+        if (!photoData.Body) continue;
+
+        const compareFacesParams = {
+          SourceImage: { Bytes: binaryImage },
+          TargetImage: { Bytes: await photoData.Body.transformToByteArray() },
+        };
+        const compareFacesCommand = new CompareFacesCommand(compareFacesParams);
+        const compareFacesResult = await rekognitionClient.send(
+          compareFacesCommand
+        );
+
+        if (
+          compareFacesResult.FaceMatches &&
+          compareFacesResult.FaceMatches.length > 0
+        ) {
+          const match = compareFacesResult.FaceMatches[0];
+          if (match.Face?.Confidence && match.Face.Confidence > 90) {
+            stopAnalysis();
+            setShowGif(true);
+            console.log("Authentication successful");
+            return;
+          }
+        }
+      }
+
+      stopAnalysis();
+      setError("Face not recognized. Please try again.");
+    } catch (err) {
+      console.error("Photo login error:", err);
+      setError("Photo login failed. Please try again.");
+    }
+  };
+
+  // Render the component UI
+  return (
+    <div className="p-10 rounded-2xl overflow-hidden bg-gray-800">
+      {!showGif && (
+        <Webcam
+          audio={false}
+          ref={webcamRef}
+          screenshotFormat="image/jpeg"
+          className="w-100 h-75 object-cover rounded-2xl"
+        />
+      )}
+      <div className="text-white text-center">
+        {isAnalyzing && !showGif && (
+          <>
+            <div className="mt-4 text-white text-lg text-center">
+              <div className="mt-4 text-white text-lg text-center">
+                {instruction}
+              </div>
+              <div className="w-full h-3 bg-black rounded-lg overflow-hidden my-3">
+                <div
+                  className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
+                  style={{ width: `${progress}%` }}
+                ></div>
+              </div>
+            </div>
+          </>
+        )}
+        {showGif && (
+          <div className="rounded-lg">
+            <img
+              src={Face}
+              alt="Verifying"
+              className="w-100 h-75 rounded-lg object-fill"
+            />
+          </div>
+        )}
+        {error && <div className="text-red-500 my-2">{error}</div>}
+      </div>
+    </div>
+  );
 };
 
 export default Home;
