@@ -3,12 +3,12 @@ import { useState, useRef, useEffect } from "react";
 import { Input } from "../../components/ui/input";
 import { Button } from "../../components/ui/button";
 import avatar from "../../assets/Genie.svg";
-
+import { z } from "zod";
 import Webcam from "react-webcam";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-
-import { validateSignUpSchema } from "../../utils/validateSignup";
-
+import { useNavigate } from "react-router-dom";
+import { validateSignUpSchema } from "../../utils/authValidate";
+import { toast } from "react-toastify";
 import {
   REACT_APP_AWS_ACCESS_KEY_ID,
   REACT_APP_AWS_SECRET_ACCESS_KEY,
@@ -18,6 +18,7 @@ import Stepper from "../../components/Stepper";
 import usePasswordToggle from "../../hooks/usePasswordToggle";
 import AuthSwitcher from "../../components/AuthSwitcher";
 const SignupCard = () => {
+  const navigate = useNavigate();
   const webcamRef = useRef<Webcam | null>(null);
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
@@ -34,6 +35,14 @@ const SignupCard = () => {
   const videoConstraints = {
     facingMode: "user",
   };
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [phoneNumberError, setPhoneNumberError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [confirmPasswordError, setConfirmPasswordError] = useState<
+    string | null
+  >(null);
+  const [imageError, setImageError] = useState<string | null>(null);
 
   // Initialize S3 client globally
   const s3Client = new S3Client({
@@ -56,11 +65,70 @@ const SignupCard = () => {
     }
   };
 
+  const Step1Schema = z.object({
+    email: z.string().email("Invalid email address"),
+    phoneNumber: z.string().min(10, "Phone number is required"),
+    name: z.string().min(1, "Name is required"),
+  });
+
+  const Step2Schema = z
+    .object({
+      password: z.string().min(8, "Password must be at least 8 characters"),
+      confirmPassword: z.string().min(8, "Confirm password is required"),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+      message: "Passwords don't match",
+      path: ["confirmPassword"],
+    });
+
   const handleNext = () => {
+    setEmailError(null);
+    setPasswordError(null);
+    setConfirmPasswordError(null);
+    setPhoneNumberError(null);
+    setNameError(null);
+    setImageError(null);
     if (currentStep === steps.length) {
       setComplete(true);
-    } else {
+      return;
+    }
+
+    try {
+      if (currentStep === 1) {
+        Step1Schema.parse({ email, phoneNumber, name });
+      } else if (currentStep === 2) {
+        Step2Schema.parse({ password, confirmPassword });
+      }
+
+      // If validation passes, move to the next step
       setCurrentStep(currentStep + 1);
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        error.errors.forEach((err) => {
+          if (err.path[0] === "email") {
+            setEmailError(err.message as string);
+          } else if (err.path[0] === "password") {
+            setPasswordError(err.message);
+          } else if (err.path[0] === "confirmPassword") {
+            setConfirmPasswordError(err.message);
+          } else if (err.path[0] === "phoneNumber") {
+            setPhoneNumberError(err.message);
+          } else if (err.path[0] === "name") {
+            setNameError(err.message);
+          } else if (err.path[0] === "image") {
+            setImageError(err.message);
+          }
+
+          // toast.error(err.message, {
+          //   position: "top-center",
+          //   autoClose: 500,
+          //   hideProgressBar: false,
+          //   closeOnClick: true,
+          //   pauseOnHover: true,
+          //   draggable: true,
+          // });
+        });
+      }
     }
   };
 
@@ -75,10 +143,19 @@ const SignupCard = () => {
     });
 
     if (!validationResponse.success) {
-      const errorMessages = validationResponse.error.errors
-        .map((err) => err.message)
-        .join(", ");
-      throw new Error(errorMessages);
+      validationResponse.error.issues.forEach((issue) => {
+        toast.error(issue.message, {
+          position: "top-center",
+          autoClose: 500,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
+      });
+      return;
     }
 
     const url = `http://localhost:4000/api/users/register`;
@@ -100,10 +177,13 @@ const SignupCard = () => {
 
     if (!response.ok) {
       const data = await response.json();
+      toast.error(data.message);
       throw new Error(data.error_msg || "Error ");
     }
 
     const data = await response.json();
+    toast.success(data.message);
+    navigate("/login");
     return data;
   };
 
@@ -153,7 +233,7 @@ const SignupCard = () => {
 
   return (
     <div className="flex  justify-center items-center ">
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 justify-center items-center">
         {/* Logo/Avatar and Signup Heading */}
         <div className="flex flex-col justify-center items-center mb-4">
           <img
@@ -169,98 +249,115 @@ const SignupCard = () => {
             Signup
           </h2>
         </div>
-        <Stepper
-          steps={steps}
-          currentStep={currentStep}
-          setCurrentStep={setCurrentStep}
-          complete={complete}
-          setComplete={setComplete}
-        />
-        {currentStep === 1 && (
-          <>
-            <Input
-              type="text"
-              placeholder="Full Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            />
-            <Input
-              type="text"
-              placeholder="Phone Number"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-            />
+        <div>
+          <Stepper
+            steps={steps}
+            currentStep={currentStep}
+            setCurrentStep={setCurrentStep}
+            complete={complete}
+            setComplete={setComplete}
+          />
+        </div>
+        <div className="flex flex-col gap-4 justify-center items-center">
+          {currentStep === 1 && (
+            <>
+              <Input
+                type="text"
+                error={nameError}
+                placeholder="Full Name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+              <Input
+                type="text"
+                error={phoneNumberError}
+                placeholder="Phone Number"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
 
-            <Input
-              type="email"
-              placeholder="Email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </>
-        )}
+              <Input
+                type="email"
+                placeholder="Email"
+                error={emailError}
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </>
+          )}
 
-        {currentStep === 2 && (
-          <>
-            <Input
-              type={InputType}
-              placeholder="Password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              icon={Icon}
-            />
+          {currentStep === 2 && (
+            <>
+              <Input
+                error={passwordError}
+                type={InputType}
+                placeholder="Password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                icon={Icon}
+              />
 
-            <Input
-              type={InputType}
-              placeholder="Confirm Password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              icon={Icon}
-            />
-          </>
-        )}
+              <Input
+                error={confirmPasswordError}
+                type={InputType}
+                placeholder="Confirm Password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                icon={Icon}
+              />
+            </>
+          )}
 
-        {currentStep === 3 && (
-          <div>
-            {" "}
-            {!cameraOn && (
-              <Button onClick={handleCaptureButtonClick}>
-                Activate Camera & Capture Photo
-              </Button>
-            )}
-            {cameraOn && (
-              <div>
-                <Webcam
-                  audio={false}
-                  height={400}
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  width={400}
-                  videoConstraints={videoConstraints}
-                />
-                <Button onClick={capturePhoto}>Capture Photo</Button>
-              </div>
-            )}
-            {imageSrc && (
-              <div>
-                <h2>Captured Photo:</h2>
-                <img src={imageSrc} alt="Captured" />
-              </div>
-            )}
-          </div>
-        )}
-        {/* 
-        <Button className="mt-1" onClick={handleSignUp}>
-          Next
-        </Button> */}
-        {!complete && (
-          <Button
-            onClick={currentStep === steps.length ? handleSignUp : handleNext}
-          >
-            {currentStep === steps.length ? "Signup" : "Next"}
-          </Button>
-        )}
+          {currentStep === 3 && (
+            <div>
+              {" "}
+              {!cameraOn && !imageSrc && (
+                <Button onClick={handleCaptureButtonClick}>
+                  Activate Camera & Capture Photo
+                </Button>
+              )}
+              {!cameraOn && imageSrc && (
+                <Button onClick={handleCaptureButtonClick}>
+                  ReCapture Photo
+                </Button>
+              )}
+              {cameraOn && (
+                <div>
+                  <Webcam
+                    audio={false}
+                    height={300}
+                    ref={webcamRef}
+                    screenshotFormat="image/jpeg"
+                    width={300}
+                    videoConstraints={videoConstraints}
+                    className="mb-2"
+                  />
+                  <Button onClick={capturePhoto}>
+                    {imageSrc ? "ReCapture Photo" : "Capture Photo"}
+                  </Button>
+                </div>
+              )}
+              {imageSrc && !cameraOn && (
+                <div>
+                  <h2>Captured Photo:</h2>
+                  <img
+                    src={imageSrc}
+                    alt="Captured"
+                    className="w-[300px] h-[300px] rounded-md"
+                  />
+                </div>
+              )}
+            </div>
+          )}
 
+          {!complete && (
+            <Button
+              onClick={currentStep === steps.length ? handleSignUp : handleNext}
+            >
+              {currentStep === steps.length ? "Signup" : "Next"}
+            </Button>
+          )}
+        </div>
         <AuthSwitcher
           text="Already have an account?"
           href="/login"

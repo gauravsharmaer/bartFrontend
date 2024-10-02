@@ -26,3 +26,17 @@ export const validateSignUpSchema = (data: {
 
   return signUpSchema.safeParse(data);
 };
+
+export const validateLoginSchema = (data: {
+  email: string;
+  password: string;
+}) => {
+  const loginSchema = z
+    .object({
+      email: z.string().email("Invalid email address"),
+      password: z.string().min(8, "Password must be at least 8 characters"),
+    })
+    .required();
+
+  return loginSchema.safeParse(data);
+};

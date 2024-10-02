@@ -9,10 +9,10 @@ const AuthSwitcher = ({ text, href, page }: AuthSwitcherProps) => {
   return (
     <>
       <Link to={href}>
-        <p className="text-[#ffff] text-sm mt-2 text-white underline">
-          {text}
-          {page}
-        </p>
+        <div className="text-[#ffff] text-sm mt-2 text-white underline font-normal flex justify-center items-center">
+          <span className="">{text}</span>
+          <span className="pl-1">{page}</span>
+        </div>
       </Link>
     </>
   );

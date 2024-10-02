@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { EyeSlash, Eye } from "@phosphor-icons/react";
 const usePasswordToggle = () => {
