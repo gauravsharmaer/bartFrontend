@@ -5,15 +5,24 @@ import Login from "../pages/login/Login";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { Navigate } from "react-router-dom";
+
+import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
 const AppRoutes = () => {
   const authenticated = useSelector<RootState>(
     (state) => state.auth.authenticated
   ) as boolean;
   return (
     <Routes>
-      <Route
+      {/* <Route
         path="/"
         element={authenticated ? <Home /> : <Navigate to="/login" />}
+      /> */}
+      <Route path="/" element={authenticated ? <Home /> : <Home />} />
+      <Route
+        path="/passwordResetagent"
+        element={
+          authenticated ? <PasswordResetAgent /> : <PasswordResetAgent />
+        }
       />
 
       <Route
