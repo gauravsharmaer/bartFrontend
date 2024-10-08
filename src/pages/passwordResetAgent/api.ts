@@ -63,7 +63,7 @@ export const storeMessage = async (
   sessionId: string
 ): Promise<void> => {
   try {
-    const username = "gauravsharma@yanthraa.com";
+    const username = "";
     const password = "gaurav@123";
 
     if (!username || !password) {
