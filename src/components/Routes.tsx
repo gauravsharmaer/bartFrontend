@@ -17,7 +17,10 @@ const AppRoutes = () => {
         path="/"
         element={authenticated ? <Home /> : <Navigate to="/login" />}
       /> */}
-      <Route path="/" element={authenticated ? <Home /> : <Home />} />
+      <Route
+        path="/"
+        element={authenticated ? <Home /> : <Navigate to="/login" />}
+      />
       {/* <Route
         path="/passwordResetagent"
         element={

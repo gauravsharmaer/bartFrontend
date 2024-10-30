@@ -499,7 +499,7 @@ const AuthvideoCard = () => {
           }
         >
           {!isModelLoaded
-            ? "Loading Models..."
+            ? "Loading Ai Models..."
             : !isWebcamReady
             ? "Initializing Camera..."
             : warmupCount < REQUIRED_WARMUP_SHOTS

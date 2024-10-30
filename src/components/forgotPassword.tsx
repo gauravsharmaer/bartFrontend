@@ -115,7 +115,6 @@
 
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
-import { Input } from "./ui/input";
 import { Link } from "react-router-dom";
 type ForgetPasswordProps = {
   active: boolean;
@@ -185,24 +184,25 @@ const ForgotPasswordPopUp: React.FC<ForgetPasswordProps> = (props) => {
         className="max-w-lg w-full bg-white p-8 rounded-xl shadow shadow-slate-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-col gap-2 justify-start items-start ">
+        <div className="flex flex-col gap-3 justify-start items-start">
           <h1 className="text-4xl font-medium">Reset password</h1>
           <p className="text-slate-500">
             Fill up the form to reset the password
           </p>
         </div>
 
-        <form className="my-10" onSubmit={handleReset}>
+        <form className="mb-10 mt-7" onSubmit={handleReset}>
           <div className="flex flex-col space-y-5">
             <label htmlFor="email">
               {/* <p className="font-medium text-slate-700 pb-2">Email address</p> */}
-              <Input
+              <input
                 id="email"
                 name="email"
                 type="email"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
-                className="w-[450px] py-3 border bg-[#F2F2F2] border-[#E8E8E8] text-[#000000] rounded-full focus:outline-none  hover:shadow"
+                className="w-full py-3 border border-slate-200 rounded-full px-3 focus:outline-none focus:border-slate-500 hover:shadow
+                "
                 placeholder="Enter email address"
                 required
               />
@@ -210,7 +210,7 @@ const ForgotPasswordPopUp: React.FC<ForgetPasswordProps> = (props) => {
 
             <button
               type="submit"
-              className="w-full py-3 font-medium text-white bg-[#262626] hover:bg-[#303030] rounded-lg border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
+              className="w-full py-3 font-medium text-white bg-[#262626] hover:bg-[#303030] rounded-full border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
               disabled={isLoading}
             >
               {isLoading ? (

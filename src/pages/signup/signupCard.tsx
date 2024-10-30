@@ -21,13 +21,15 @@ const Step1Schema = z.object({
 
 const Step2Schema = z
   .object({
-    password: z.string().min(6, "Password must be at least 6 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string(),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
     path: ["confirmPassword"],
   });
+
+const PROGRESS_MAX = 70;
 
 const SignupCard = () => {
   const navigate = useNavigate();
@@ -36,6 +38,7 @@ const SignupCard = () => {
 
   const [imageSrc, setImageSrc] = useState<string | null>(null);
   const [cameraOn, setCameraOn] = useState(false);
+  const [progress, setProgress] = useState(20);
   const [email, setEmail] = useState("");
   const [name, setName] = useState("");
   const [password, setPassword] = useState("");
@@ -61,7 +64,41 @@ const SignupCard = () => {
   const videoConstraints = {
     facingMode: "user",
   };
+  useEffect(() => {
+    if (!processingFaceApi) {
+      setProgress(20);
+      return;
+    }
 
+    let animationFrameId: number;
+
+    const startTimestamp = Date.now();
+    const duration = 2000; // 2 seconds total animation
+
+    const animate = () => {
+      const now = Date.now();
+      const elapsed = now - startTimestamp;
+      const progress = Math.min(
+        (elapsed / duration) * PROGRESS_MAX,
+        PROGRESS_MAX
+      );
+
+      setProgress(Math.floor(progress));
+
+      if (progress < PROGRESS_MAX) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    // Proper cleanup
+    return () => {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+      }
+    };
+  }, [processingFaceApi]);
   const MODEL_URL = "/models";
 
   const clearErrors = () => {
@@ -72,6 +109,12 @@ const SignupCard = () => {
     setConfirmPasswordError(null);
     setImageError(null);
   };
+
+  useEffect(() => {
+    if (currentStep === 3) {
+      setCameraOn(true);
+    }
+  }, [currentStep]);
 
   useEffect(() => {
     const loadModels = async () => {
@@ -285,16 +328,18 @@ const SignupCard = () => {
 
   const handleSignUp = async () => {
     if (!imageSrc) {
-      toast.error("Please capture your photo before signing up");
+      // toast.error("Please capture your photo before signing up");
       setImageError("Photo required for signup");
       return;
     }
 
     if (!faceDescriptor) {
-      toast.error(
+      // toast.error(
+      //   "Please ensure your face is properly captured before signing up"
+      // );
+      setImageError(
         "Please ensure your face is properly captured before signing up"
       );
-      setImageError("Valid face photo required for signup");
       return;
     }
 
@@ -431,11 +476,14 @@ const SignupCard = () => {
 
           {currentStep === 3 && (
             <div>
-              {!cameraOn && !imageSrc && (
-                <Button onClick={() => setCameraOn(true)}>
+              {/* {!cameraOn && !imageSrc && (
+                <Button
+                  onClick={() => setCameraOn(true)}
+                  className="rounded-lg"
+                >
                   Activate Camera & Capture Photo
                 </Button>
-              )}
+              )} */}
               {cameraOn && (
                 <div>
                   <Webcam
@@ -492,9 +540,12 @@ const SignupCard = () => {
           )}
 
           {processingFaceApi && (
-            <p className=" text-yellow-500">
-              Processing face... Please wait and don't close the window
-            </p>
+            <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-3">
+              <div
+                className="h-full w-96 bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
+                style={{ width: `${progress}%` }}
+              ></div>
+            </div>
           )}
 
           {!complete && (
