@@ -69,7 +69,11 @@ export const currentProfile = createAsyncThunk(
 export const authSlice = createSlice({
   name: "authSlice",
   initialState,
-  reducers: {},
+  reducers: {
+    handleFacialAuth: (state, action) => {
+      state.authenticated = action.payload;
+    },
+  },
   extraReducers: (builder) => {
     builder.addCase(userLogin.fulfilled, (state, action) => {
       if (action.payload === 200) {
@@ -93,6 +97,6 @@ export const authSlice = createSlice({
 });
 
 // Action creators are generated for each case reducer function
-// export const {} = authSlice.actions;
+export const { handleFacialAuth } = authSlice.actions;
 
 export default authSlice.reducer;

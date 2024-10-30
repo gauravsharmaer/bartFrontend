@@ -12,9 +12,8 @@ interface StepperProps {
 const Stepper: React.FC<StepperProps> = ({
   steps,
   currentStep,
-  setCurrentStep,
+
   complete,
-  setComplete,
 }) => {
   return (
     <>

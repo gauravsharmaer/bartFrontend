@@ -5,8 +5,8 @@ import Login from "../pages/login/Login";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { Navigate } from "react-router-dom";
-
-import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
+import ResetPassword from "../pages/ResetPassword/ResetPassword";
+// import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
 const AppRoutes = () => {
   const authenticated = useSelector<RootState>(
     (state) => state.auth.authenticated
@@ -18,12 +18,12 @@ const AppRoutes = () => {
         element={authenticated ? <Home /> : <Navigate to="/login" />}
       /> */}
       <Route path="/" element={authenticated ? <Home /> : <Home />} />
-      <Route
+      {/* <Route
         path="/passwordResetagent"
         element={
           authenticated ? <PasswordResetAgent /> : <PasswordResetAgent />
         }
-      />
+      /> */}
 
       <Route
         path="/signup"
@@ -33,6 +33,7 @@ const AppRoutes = () => {
         path="/login"
         element={authenticated ? <Navigate to="/" /> : <Login />}
       />
+      <Route path="/resetPassword" element={<ResetPassword />} />
       <Route path="*" element={<h1>404 page not found</h1>} />
     </Routes>
   );

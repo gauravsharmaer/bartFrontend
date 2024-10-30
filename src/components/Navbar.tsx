@@ -20,8 +20,8 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
-import BART from "../assets/Genie.svg";
-import arrow from "../assets/arrow-circle-up.svg";
+import BART from "../assets/Bart.jpg";
+import arrow from "../assets/arrow-up-right.svg";
 import {
   REACT_APP_AWS_REGION,
   REACT_APP_AWS_ACCESS_KEY_ID,
@@ -112,7 +112,7 @@ const Navbar: React.FC = () => {
   return (
     <aside
       className={`bg-black text-white border-r-2 border-[#313131] transition-all duration-700 ease-in-out relative ${
-        isCollapsed ? "w-32 p-[10px]" : "w-[265px] p-5"
+        isCollapsed ? "w-32 p-[10px]" : "w-72 p-5"
       }`}
     >
       <button
@@ -123,36 +123,70 @@ const Navbar: React.FC = () => {
         {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
       </button>
       <div>
-        <div className="text-center">
+        <div className="text-center flex  ml-2 gap-3">
           <img
             src={profilePhoto}
             alt="Profile"
-            className="rounded-full w-[50px] h-[50px] mx-auto block"
+            className="rounded-full w-[50px] h-[50px]  "
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            <span className="block">
-              {fullName || userName || "Default Name"}
-            </span>
-            <small className="block mt-[5px] text-[#888]">
-              Product Manager
-            </small>
+            <div className="flex flex-col ml-2 mt-2">
+              <span className="mb-[2px] text-sm font-medium text-[#fff]">
+                {fullName || userName || "Default Name"}
+              </span>
+              <small className=" text-[#888] text-[12px] font-normal">
+                Product Manager
+              </small>
+            </div>
           </Box>
         </div>
-        <nav>
+
+        <nav className="mt-4">
           <List>
             {menuItems.map((item) => (
               <ListItem
-                className="my-[10px] text-base cursor-pointer p-5 rounded-[20px]
-                 bg-black text-white flex items-center hover:scale-105 hover:bg-[#333333] hover:rounded-[10px]"
                 component={Link}
                 to={item.path}
                 key={item.id}
+                sx={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "flex-start", // Changed from space-around
+                  padding: "10px", // Adjust as needed
+                  margin: "10px 0", // Adds vertical margin
+                  cursor: "pointer",
+                  borderRadius: "10px", // Rounded corners
+                  backgroundColor: "black",
+                  width: isCollapsed ? "50px" : "auto",
+                  marginLeft: isCollapsed ? "10px" : "auto",
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "#333333",
+                    transform: "scale(1.05)",
+                  },
+                }}
               >
-                <ListItemIcon sx={{ color: "white" }}>{item.icon}</ListItemIcon>
+                <ListItemIcon
+                  sx={{
+                    color: "white",
+                    minWidth: "40px", // Reduce the default width
+                    "& .MuiSvgIcon-root": {
+                      fontSize: isCollapsed ? "20px" : "16px",
+                      marginLeft: isCollapsed ? "4px" : "-2px",
+                    },
+                  }}
+                >
+                  {item.icon}
+                </ListItemIcon>
                 <ListItemText
                   primary={item.name}
                   sx={{
                     visibility: isCollapsed ? "hidden" : "visible",
+                    marginLeft: "-8px", // Reduce left margin
+                    "& .MuiListItemText-primary": {
+                      fontSize: "14px",
+                      fontWeight: 400,
+                    },
                   }}
                 />
               </ListItem>
@@ -162,15 +196,18 @@ const Navbar: React.FC = () => {
       </div>
 
       <footer
-        className={`absolute bottom-[50px] p-[10px] bg-[#282828] flex justify-center rounded-[10px] box-border overflow-hidden ${
-          isCollapsed ? "w-[calc(100%-20px)]" : "w-[calc(100%-40px)]"
+        className={`absolute bottom-[50px] p-[10px]  flex justify-center rounded-[10px] box-border overflow-hidden ${
+          isCollapsed
+            ? "bg-none"
+            : "bg-[#282828] transition-all duration-700 ease-in-out "
         }`}
       >
-        <div className="flex items-center w-full pl-0">
+        <div className="flex items-center w-full pl-0 ">
           <img
             src={BART}
             alt="BART Logo"
-            className="w-[35px] h-[40px] mr-[10px] bg-white rounded-[5px] p-0 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120"
+            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-0 px-[5px]
+             transition-transform duration-300 ease-in-out hover:scale-120"
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
             {/* <p className="m-0 text-white text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] whitespace-nowrap overflow-hidden text-ellipsis">
@@ -183,9 +220,25 @@ const Navbar: React.FC = () => {
                 />
               </strong>
             </p> */}
-            <p className="m-0 text-gray-500 text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] whitespace-nowrap overflow-hidden text-ellipsis">
-              Bay Area Rapid Transit
-            </p>
+            <div className="flex flex-col ">
+              <div className="flex flex-row  items-center gap-2">
+                <p className="font-normal text-[14px]">BART</p>
+                <img
+                  src={arrow}
+                  alt="arrow"
+                  className="w-4 h-4 bg-none bg-transparent"
+                />
+              </div>
+              <div
+                className={`m-0 text-gray-500 
+                  text-[12px]
+                  opacity-60
+            text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] 
+            whitespace-nowrap overflow-hidden text-ellipsis `}
+              >
+                Bay Area Rapid Transit
+              </div>
+            </div>
           </Box>
         </div>
       </footer>

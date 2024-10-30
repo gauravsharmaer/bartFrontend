@@ -6,7 +6,6 @@ export const validateSignUpSchema = (data: {
   password: string;
   confirmPassword: string;
   phoneNumber: string;
-  image: string;
 }) => {
   const signUpSchema = z
     .object({
@@ -17,7 +16,6 @@ export const validateSignUpSchema = (data: {
         .string()
         .min(8, "Confirm Password must be at least 8 characters"),
       phoneNumber: z.string().nonempty("Phone number is required"),
-      image: z.string().nonempty("Image is required"),
     })
     .refine((data) => data.password === data.confirmPassword, {
       message: "Passwords do not match",
