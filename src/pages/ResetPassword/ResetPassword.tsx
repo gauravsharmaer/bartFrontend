@@ -26,7 +26,7 @@ const ResetPassword = () => {
         throw new Error(jsonResponse.message || "An error occurred");
       }
 
-      toast.success("Password reset email sent successfully");
+      toast.success(jsonResponse.message);
     } catch (error) {
       if (error instanceof Error) {
         toast.error(error.message);
