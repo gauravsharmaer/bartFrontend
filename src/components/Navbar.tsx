@@ -18,6 +18,14 @@ import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
+import homeIcon from "../assets/home.svg";
+import {
+  Sticker,
+  ClockCounterClockwise,
+  Plus,
+  MagnifyingGlass,
+  GearSix,
+} from "@phosphor-icons/react";
 import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import BART from "../assets/Bart.jpg";
@@ -37,12 +45,23 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { id: 1, name: "Home", icon: <HomeOutlined />, path: "/" },
-  { id: 3, name: "Search", icon: <SearchIcon />, path: "/search" },
+  { id: 1, name: "Home", icon: <img src={homeIcon} alt="home" />, path: "/" },
+  { id: 2, name: "New chat", icon: <Plus size={16} />, path: "/create" },
+  {
+    id: 3,
+    name: "Search",
+    icon: <MagnifyingGlass size={16} />,
+    path: "/search",
+  },
   { id: 4, name: "Templates", icon: <GridViewOutlined />, path: "/templates" },
-  { id: 5, name: "History", icon: <HistoryIcon />, path: "/history" },
-  { id: 6, name: "Tickets", icon: <StickyNote2Outlined />, path: "/tickets" },
-  { id: 7, name: "Settings", icon: <SettingsIcon />, path: "/settings" },
+  {
+    id: 5,
+    name: "History",
+    icon: <ClockCounterClockwise size={16} />,
+    path: "/history",
+  },
+  { id: 6, name: "Tickets", icon: <Sticker size={16} />, path: "/tickets" },
+  { id: 7, name: "Settings", icon: <GearSix size={16} />, path: "/settings" },
 ];
 
 // Initialize AWS S3 client
@@ -112,7 +131,7 @@ const Navbar: React.FC = () => {
   return (
     <aside
       className={`bg-black text-white border-r-2 border-[#313131] transition-all duration-700 ease-in-out relative ${
-        isCollapsed ? "w-32 p-[10px]" : "w-72 p-5"
+        isCollapsed ? "w-32 p-[10px]" : "w-64 p-5"
       }`}
     >
       <button
@@ -127,11 +146,11 @@ const Navbar: React.FC = () => {
           <img
             src={profilePhoto}
             alt="Profile"
-            className="rounded-full w-[50px] h-[50px]  "
+            className="rounded-full w-10 h-10 mt-2 "
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            <div className="flex flex-col ml-2 mt-2">
-              <span className="mb-[2px] text-sm font-medium text-[#fff]">
+            <div className="flex flex-col mt-2 ">
+              <span className="mb-[2px] text-sm font-medium text-[#fff] flex justify-start">
                 {fullName || userName || "Default Name"}
               </span>
               <small className=" text-[#888] text-[12px] font-normal">
@@ -141,7 +160,7 @@ const Navbar: React.FC = () => {
           </Box>
         </div>
 
-        <nav className="mt-4">
+        <nav className="">
           <List>
             {menuItems.map((item) => (
               <ListItem
@@ -151,14 +170,16 @@ const Navbar: React.FC = () => {
                 sx={{
                   flexDirection: "row",
                   alignItems: "center",
-                  justifyContent: "flex-start", // Changed from space-around
-                  padding: "10px", // Adjust as needed
-                  margin: "10px 0", // Adds vertical margin
+                  justifyContent: "center",
+                  padding: "10px",
+                  margin: "10px 0",
                   cursor: "pointer",
-                  borderRadius: "10px", // Rounded corners
+                  borderRadius: "10px",
                   backgroundColor: "black",
-                  width: isCollapsed ? "50px" : "auto",
-                  marginLeft: isCollapsed ? "10px" : "auto",
+                  width: isCollapsed ? "45px" : "auto",
+                  height: isCollapsed ? "45px" : "auto",
+                  marginLeft: isCollapsed ? "2px" : "auto",
+                  marginRight: isCollapsed ? "auto" : "auto",
                   color: "white",
                   "&:hover": {
                     backgroundColor: "#333333",
@@ -169,10 +190,15 @@ const Navbar: React.FC = () => {
                 <ListItemIcon
                   sx={{
                     color: "white",
-                    minWidth: "40px", // Reduce the default width
+                    minWidth: "auto",
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    paddingLeft: isCollapsed ? "6px" : "0",
+                    margin: 0,
+
                     "& .MuiSvgIcon-root": {
                       fontSize: isCollapsed ? "20px" : "16px",
-                      marginLeft: isCollapsed ? "4px" : "-2px",
                     },
                   }}
                 >
@@ -182,7 +208,7 @@ const Navbar: React.FC = () => {
                   primary={item.name}
                   sx={{
                     visibility: isCollapsed ? "hidden" : "visible",
-                    marginLeft: "-8px", // Reduce left margin
+                    marginLeft: "8px",
                     "& .MuiListItemText-primary": {
                       fontSize: "14px",
                       fontWeight: 400,
@@ -196,30 +222,20 @@ const Navbar: React.FC = () => {
       </div>
 
       <footer
-        className={`absolute bottom-[50px] p-[10px]  flex justify-center rounded-[10px] box-border overflow-hidden ${
+        className={`absolute bottom-12  flex justify-center rounded-[10px] box-border overflow-hidden ${
           isCollapsed
             ? "bg-none"
-            : "bg-[#282828] transition-all duration-700 ease-in-out "
+            : "bg-[#282828] transition-all duration-700 ease-in-out py-4 pr-3 pl-4"
         }`}
       >
         <div className="flex items-center w-full pl-0 ">
           <img
             src={BART}
             alt="BART Logo"
-            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-0 px-[5px]
+            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-3 px-[5px]
              transition-transform duration-300 ease-in-out hover:scale-120"
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            {/* <p className="m-0 text-white text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] whitespace-nowrap overflow-hidden text-ellipsis">
-              <strong>
-                BART{" "}
-                <img
-                  className="w-5 h-5 mr-[10px] absolute p-0 bg-[#282828]"
-                  src={arrow}
-                  alt="arrow"
-                />
-              </strong>
-            </p> */}
             <div className="flex flex-col ">
               <div className="flex flex-row  items-center gap-2">
                 <p className="font-normal text-[14px]">BART</p>
@@ -230,7 +246,7 @@ const Navbar: React.FC = () => {
                 />
               </div>
               <div
-                className={`m-0 text-gray-500 
+                className={`m-0 text-[#f7f7f7] 
                   text-[12px]
                   opacity-60
             text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] 

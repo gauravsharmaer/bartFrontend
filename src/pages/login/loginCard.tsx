@@ -104,6 +104,7 @@ const LoginCard = () => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 error={emailError}
+                className="w-full"
               />
 
               <Input
@@ -113,6 +114,7 @@ const LoginCard = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 icon={Icon}
+                className="w-full"
               />
 
               <Button className="" onClick={handleLogin}>

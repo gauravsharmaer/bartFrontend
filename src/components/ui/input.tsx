@@ -41,7 +41,7 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           <input
             type={type}
-            className={`h-16 w-full  rounded-full p-7 border bg-[#1D1D1D] focus:outline-none
+            className={`h-16  rounded-full p-7 border bg-[#1D1D1D] focus:outline-none
               text-[white] peer ${
                 error ? "border-red-500" : "border-[#282829]"
               } ${icon ? "pr-12" : ""}

@@ -435,6 +435,7 @@ const SignupCard = () => {
                 placeholder="Full Name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
+                className="w-full"
               />
               <Input
                 type="text"
@@ -442,6 +443,7 @@ const SignupCard = () => {
                 placeholder="Phone Number"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
+                className="w-full"
               />
               <Input
                 type="email"
@@ -449,6 +451,7 @@ const SignupCard = () => {
                 error={emailError}
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
+                className="w-full"
               />
             </>
           )}
@@ -462,6 +465,7 @@ const SignupCard = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 icon={Icon}
+                className="w-full"
               />
               <Input
                 error={confirmPasswordError}
@@ -470,6 +474,7 @@ const SignupCard = () => {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 icon={Icon}
+                className="w-full"
               />
             </>
           )}

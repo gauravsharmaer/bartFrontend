@@ -116,6 +116,7 @@
 import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
+import { Input } from "./ui/input";
 type ForgetPasswordProps = {
   active: boolean;
   closeForgetPasswordpage: () => void;
@@ -184,25 +185,39 @@ const ForgotPasswordPopUp: React.FC<ForgetPasswordProps> = (props) => {
         className="max-w-lg w-full bg-white p-8 rounded-xl shadow shadow-slate-300"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex flex-col gap-3 justify-start items-start">
-          <h1 className="text-4xl font-medium">Reset password</h1>
-          <p className="text-slate-500">
-            Fill up the form to reset the password
-          </p>
+        <div className="flex justify-between w-full items-center ">
+          <div className="flex flex-col gap-1 justify-start items-start pl-2">
+            <h1 className="text-4xl font-medium flex items-center">
+              Reset password
+            </h1>
+            <p className="text-slate-500">
+              Fill up the form to reset the password
+            </p>
+          </div>
+
+          <div>
+            <button
+              className="text-slate-500 hover:text-slate-700 text-2xl  bg-gray-200 rounded-full h-8 w-8 relative bottom-2"
+              onClick={props.closeForgetPasswordpage}
+            >
+              <span className="text-2xl relative bottom-1">&times;</span>
+            </button>
+          </div>
         </div>
 
-        <form className="mb-10 mt-7" onSubmit={handleReset}>
-          <div className="flex flex-col space-y-5">
+        <form className=" mt-6 mb-1" onSubmit={handleReset}>
+          <div className="flex flex-col space-y-3">
             <label htmlFor="email">
               {/* <p className="font-medium text-slate-700 pb-2">Email address</p> */}
-              <input
+              <Input
                 id="email"
                 name="email"
                 type="email"
                 value={emailInput}
                 onChange={(e) => setEmailInput(e.target.value)}
-                className="w-full py-3 border border-slate-200 rounded-full px-3 focus:outline-none focus:border-slate-500 hover:shadow
-                "
+                className="w-[445px] bg-white text-black border-opacity-40"
+                // className="w-full py-3 border border-slate-200 rounded-full px-3 focus:outline-none focus:border-slate-500 hover:shadow
+                // "
                 placeholder="Enter email address"
                 required
               />
@@ -210,7 +225,7 @@ const ForgotPasswordPopUp: React.FC<ForgetPasswordProps> = (props) => {
 
             <button
               type="submit"
-              className="w-full py-3 font-medium text-white bg-[#262626] hover:bg-[#303030] rounded-full border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
+              className="w-full py-5 font-medium text-white bg-[#262626] hover:bg-[#303030] rounded-full border-indigo-500 hover:shadow inline-flex space-x-2 items-center justify-center"
               disabled={isLoading}
             >
               {isLoading ? (
@@ -254,7 +269,7 @@ const ForgotPasswordPopUp: React.FC<ForgetPasswordProps> = (props) => {
                 to="/signup"
                 className="text-[#262626] font-medium inline-flex space-x-1 items-center ml-1"
               >
-                <span className="text-blue-600">Register now </span>
+                <span className="text-blue-600">Signup now </span>
                 <span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
