@@ -5,7 +5,6 @@ import {
   HeadObjectCommand,
 } from "@aws-sdk/client-s3";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
-import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
@@ -26,7 +25,8 @@ import {
   REACT_APP_AWS_ACCESS_KEY_ID,
   REACT_APP_AWS_SECRET_ACCESS_KEY,
   REACT_APP_S3_BUCKET,
-} from "../config";
+} from "../config"
+
 
 interface MenuItem {
   id: number;
@@ -64,15 +64,11 @@ const s3Client = new S3Client({
   },
 });
 
-const Navbar: React.FC = () => {
-  const [isCollapsed, setIsCollapsed] = useState<boolean>(false);
+const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
   const [userName, setUserName] = useState<string>("");
   const [profilePhoto, setProfilePhoto] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
 
-  const toggleSidebar = (): void => {
-    setIsCollapsed(!isCollapsed);
-  };
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
@@ -121,24 +117,26 @@ const Navbar: React.FC = () => {
 
   return (
     <aside
-      className={`bg-black text-white border-r-2 border-[#313131] transition-all duration-700 ease-in-out relative ${
-        isCollapsed ? "w-32 p-[10px]" : "w-64 p-5"
-      }`}
+      className={`bg-black z-[200] fixed left-0 top-0 bottom-0 text-white border-r-2 border-[#313131] 
+        flex flex-col items-center justify-between
+        transition-all duration-700 ease-in-out  ${props.collapsed ? "w-[80px] p-[10px]" : "w-[265px] p-5"
+        }`}
     >
       <button
         className="absolute top-5 -right-3 bg-transparent border-2 border-[#484848] rounded-full text-white text-[3px] cursor-pointer flex items-center justify-center w-5 h-5 p-[10px] bg-black"
-        onClick={toggleSidebar}
+        onClick={props.onToggle}
       >
-        {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
+        {props.collapsed ? <ChevronRight /> : <ChevronLeft />}
       </button>
-      <div>
-        <div className="text-center flex ml-2 gap-3">
+
+      <div className="w-full">
+        <div className="text-center w-full flex items-center gap-3">
           <img
             src={profilePhoto}
             alt="Profile"
             className="rounded-full w-10 h-10 mt-2"
           />
-          <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
+          <Box sx={{ visibility: props.collapsed ? "hidden" : "visible" }}>
             <div className="flex flex-col mt-2">
               <span className="mb-[2px] text-sm font-medium text-[#fff] flex justify-start">
                 {fullName || userName || "Default Name"}
@@ -150,96 +148,93 @@ const Navbar: React.FC = () => {
           </Box>
         </div>
 
-        <nav>
-          <List>
-            {menuItems.map((item) => (
-              <ListItem
-                component={Link}
-                to={item.path}
-                key={item.id}
+        <nav className=" w-full">
+          {menuItems.map((item) => (
+            <ListItem
+              component={Link}
+              to={item.path}
+              key={item.id}
+              sx={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "center",
+                padding: "10px",
+                margin: "10px 0",
+                cursor: "pointer",
+                borderRadius: "10px",
+                backgroundColor: "black",
+                width: props.collapsed ? "45px" : "auto",
+                height: props.collapsed ? "45px" : "auto",
+                marginLeft: props.collapsed ? "2px" : "auto",
+                marginRight: props.collapsed ? "auto" : "auto",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "#333333",
+                  transform: "scale(1.05)",
+                },
+              }}
+              className="transition-all duration-700 ease-in-out"
+            >
+              <ListItemIcon
                 sx={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  padding: "10px",
-                  margin: "10px 0",
-                  cursor: "pointer",
-                  borderRadius: "10px",
-                  backgroundColor: "black",
-                  width: isCollapsed ? "45px" : "auto",
-                  height: isCollapsed ? "45px" : "auto",
-                  marginLeft: isCollapsed ? "2px" : "auto",
-                  marginRight: isCollapsed ? "auto" : "auto",
                   color: "white",
-                  "&:hover": {
-                    backgroundColor: "#333333",
-                    transform: "scale(1.05)",
+                  minWidth: "auto",
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  paddingLeft: props.collapsed ? "6px" : "0",
+                  margin: 0,
+                  "& .MuiSvgIcon-root": {
+                    fontSize: props.collapsed ? "20px" : "16px",
                   },
                 }}
+                className="transition-all duration-700 ease-in-out"
               >
-                <ListItemIcon
-                  sx={{
-                    color: "white",
-                    minWidth: "auto",
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    paddingLeft: isCollapsed ? "6px" : "0",
-                    margin: 0,
-                    "& .MuiSvgIcon-root": {
-                      fontSize: isCollapsed ? "20px" : "16px",
-                    },
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText
-                  primary={item.name}
-                  sx={{
-                    visibility: isCollapsed ? "hidden" : "visible",
-                    marginLeft: "8px",
-                    "& .MuiListItemText-primary": {
-                      fontSize: "14px",
-                      fontWeight: 400,
-                    },
-                  }}
-                />
-              </ListItem>
-            ))}
-          </List>
+                {item.icon}
+              </ListItemIcon>
+              <ListItemText
+                primary={item.name}
+                sx={{
+                  visibility: props.collapsed ? "hidden" : "visible",
+                  marginLeft: "8px",
+                  "& .MuiListItemText-primary": {
+                    fontSize: "14px",
+                    fontWeight: 400,
+                  },
+                }}
+                className="transition-all duration-700 ease-in-out"
+              />
+            </ListItem>
+          ))}
         </nav>
       </div>
 
-      <footer
-        className={`absolute bottom-12 flex justify-center rounded-[10px] box-border overflow-hidden ${
-          isCollapsed
-            ? "bg-none"
-            : "bg-[#282828] transition-all duration-700 ease-in-out py-4 pr-3 pl-4"
-        }`}
-      >
-        <div className="flex items-center w-full pl-0">
-          <img
-            src={BART}
-            alt="BART Logo"
-            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-3 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120"
-          />
-          <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            <div className="flex flex-col">
+      <div className={`flex items-center rounded-lg w-full transition-all duration-700 p-4 ease-in-out ${!props.collapsed ? "bg-[#252525]" : ""} `}>
+        <img
+          src={BART}
+          alt="BART Logo"
+          className={` h-${props.collapsed ? "[30px]" : "[50px]"} mr-[10px] bg-white rounded-[5px] p-3 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120`}
+        />
+
+        {
+          props.collapsed ? null : <>
+            <div className={`flex flex-col transition-all duration-700 ease-in-out  `}>
               <div className="flex flex-row items-center gap-2">
                 <p className="font-normal text-[14px]">BART</p>
                 <img
                   src={arrow}
                   alt="arrow"
-                  className="w-4 h-4 bg-none bg-transparent"
+                  className="h-2 bg-none bg-transparent"
                 />
               </div>
               <div className="m-0 text-[#f7f7f7] text-[12px] opacity-60 text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] whitespace-nowrap overflow-hidden text-ellipsis">
                 Bay Area Rapid Transit
               </div>
             </div>
-          </Box>
-        </div>
-      </footer>
+          </>
+        }
+      </div>
+
     </aside>
   );
 };

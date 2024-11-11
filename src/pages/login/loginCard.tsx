@@ -7,11 +7,14 @@ import AuthSwitcher from "../../components/AuthSwitcher";
 import usePasswordToggle from "../../hooks/usePasswordToggle";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux/store";
-import { userLogin } from "../../redux/authSlice";
+import { currentProfile } from "../../redux/authSlice";
 import { validateLoginSchema } from "../../utils/authValidate";
 import AuthvideoCard from "./AuthvideoCard";
 import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
+import { toast } from "react-toastify";
+
+
 
 const LoginCard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -21,6 +24,32 @@ const LoginCard = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
+
+
+  const login = async (email: string, password: string) => {
+    const response = await fetch("http://localhost:4000/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify({
+        email,
+        password
+      }),
+    });
+
+    if (!response.ok) {
+      const data = await response.json();
+      toast.error(data.message);
+      return
+    }
+    const data = await response.json();
+    toast.success(data.message);
+
+    dispatch(currentProfile());
+  }
+
 
   const handleLogin = () => {
     const validationResponse = validateLoginSchema({ email, password });
@@ -45,7 +74,8 @@ const LoginCard = () => {
     // Clear any previous errors if validation succeeds
     setEmailError(null);
     setPasswordError(null);
-    dispatch(userLogin({ email, password }));
+    login(email, password);
+
   };
 
   const { InputType, Icon } = usePasswordToggle();
