@@ -41,12 +41,10 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         <div className="relative">
           <input
             type={type}
-            className={`h-16  rounded-full p-7 border bg-[#1D1D1D] focus:outline-none
+            className={`h-16 rounded-full p-7 border bg-[#1D1D1D] focus:outline-none
               text-[white] peer ${
                 error ? "border-red-500" : "border-[#282829]"
-              } ${icon ? "pr-12" : ""}
-
-               ${className}`}
+              } ${icon ? "pr-12" : ""} ${className}`}
             ref={inputRef}
             placeholder=" "
             onChange={handleInputChange}
@@ -56,11 +54,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           <label
             className={`absolute left-7 top-[20%] text-[12px] transform -translate-y-1/2
                text-[#AAAAAA] transition-all duration-200 cursor-text
-      ${
-        isFilled
-          ? "text-[#888] text-[12px] "
-          : "peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base mb-1"
-      }`}
+              ${
+                isFilled
+                  ? "text-[#888] text-[12px] "
+                  : "peer-placeholder-shown:top-1/2 peer-placeholder-shown:text-base mb-1"
+              }`}
             onClick={handleLabelClick}
           >
             {placeholder}

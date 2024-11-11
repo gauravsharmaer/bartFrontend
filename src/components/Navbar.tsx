@@ -4,21 +4,11 @@ import {
   GetObjectCommand,
   HeadObjectCommand,
 } from "@aws-sdk/client-s3";
-import {
-  ChevronLeft,
-  ChevronRight,
-  GridViewOutlined,
-  HomeOutlined,
-  StickyNote2Outlined,
-  Search as SearchIcon,
-  History as HistoryIcon,
-  Settings as SettingsIcon,
-} from "@mui/icons-material";
+import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import List from "@mui/material/List";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import homeIcon from "../assets/home.svg";
 import {
   Sticker,
   ClockCounterClockwise,
@@ -30,6 +20,7 @@ import { Link } from "react-router-dom";
 import { Box } from "@mui/material";
 import BART from "../assets/Bart.jpg";
 import arrow from "../assets/arrow-up-right.svg";
+import homeIcon from "../assets/home.svg";
 import {
   REACT_APP_AWS_REGION,
   REACT_APP_AWS_ACCESS_KEY_ID,
@@ -53,7 +44,7 @@ const menuItems: MenuItem[] = [
     icon: <MagnifyingGlass size={16} />,
     path: "/search",
   },
-  { id: 4, name: "Templates", icon: <GridViewOutlined />, path: "/templates" },
+  { id: 4, name: "Templates", icon: <Sticker size={16} />, path: "/templates" },
   {
     id: 5,
     name: "History",
@@ -135,32 +126,31 @@ const Navbar: React.FC = () => {
       }`}
     >
       <button
-        className="absolute top-5 -right-3 bg-transparent 
-        border-2 border-[#484848] rounded-full text-white text-[3px] cursor-pointer flex items-center justify-center w-5 h-5 p-[10px] bg-black"
+        className="absolute top-5 -right-3 bg-transparent border-2 border-[#484848] rounded-full text-white text-[3px] cursor-pointer flex items-center justify-center w-5 h-5 p-[10px] bg-black"
         onClick={toggleSidebar}
       >
         {isCollapsed ? <ChevronRight /> : <ChevronLeft />}
       </button>
       <div>
-        <div className="text-center flex  ml-2 gap-3">
+        <div className="text-center flex ml-2 gap-3">
           <img
             src={profilePhoto}
             alt="Profile"
-            className="rounded-full w-10 h-10 mt-2 "
+            className="rounded-full w-10 h-10 mt-2"
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            <div className="flex flex-col mt-2 ">
+            <div className="flex flex-col mt-2">
               <span className="mb-[2px] text-sm font-medium text-[#fff] flex justify-start">
                 {fullName || userName || "Default Name"}
               </span>
-              <small className=" text-[#888] text-[12px] font-normal">
+              <small className="text-[#888] text-[12px] font-normal">
                 Product Manager
               </small>
             </div>
           </Box>
         </div>
 
-        <nav className="">
+        <nav>
           <List>
             {menuItems.map((item) => (
               <ListItem
@@ -196,7 +186,6 @@ const Navbar: React.FC = () => {
                     alignItems: "center",
                     paddingLeft: isCollapsed ? "6px" : "0",
                     margin: 0,
-
                     "& .MuiSvgIcon-root": {
                       fontSize: isCollapsed ? "20px" : "16px",
                     },
@@ -222,22 +211,21 @@ const Navbar: React.FC = () => {
       </div>
 
       <footer
-        className={`absolute bottom-12  flex justify-center rounded-[10px] box-border overflow-hidden ${
+        className={`absolute bottom-12 flex justify-center rounded-[10px] box-border overflow-hidden ${
           isCollapsed
             ? "bg-none"
             : "bg-[#282828] transition-all duration-700 ease-in-out py-4 pr-3 pl-4"
         }`}
       >
-        <div className="flex items-center w-full pl-0 ">
+        <div className="flex items-center w-full pl-0">
           <img
             src={BART}
             alt="BART Logo"
-            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-3 px-[5px]
-             transition-transform duration-300 ease-in-out hover:scale-120"
+            className="w-[70px] h-[60px] mr-[10px] bg-white rounded-[5px] p-3 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120"
           />
           <Box sx={{ visibility: isCollapsed ? "hidden" : "visible" }}>
-            <div className="flex flex-col ">
-              <div className="flex flex-row  items-center gap-2">
+            <div className="flex flex-col">
+              <div className="flex flex-row items-center gap-2">
                 <p className="font-normal text-[14px]">BART</p>
                 <img
                   src={arrow}
@@ -245,13 +233,7 @@ const Navbar: React.FC = () => {
                   className="w-4 h-4 bg-none bg-transparent"
                 />
               </div>
-              <div
-                className={`m-0 text-[#f7f7f7] 
-                  text-[12px]
-                  opacity-60
-            text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] 
-            whitespace-nowrap overflow-hidden text-ellipsis `}
-              >
+              <div className="m-0 text-[#f7f7f7] text-[12px] opacity-60 text-left font-['Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif] whitespace-nowrap overflow-hidden text-ellipsis">
                 Bay Area Rapid Transit
               </div>
             </div>

@@ -8,7 +8,6 @@ import usePasswordToggle from "../../hooks/usePasswordToggle";
 import { useDispatch } from "react-redux";
 import { AppDispatch } from "../../redux/store";
 import { userLogin } from "../../redux/authSlice";
-// import { toast } from "react-toastify";
 import { validateLoginSchema } from "../../utils/authValidate";
 import AuthvideoCard from "./AuthvideoCard";
 import Email from "../../assets/Email.svg";
@@ -19,8 +18,8 @@ const LoginCard = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [viaphoto, setViaphoto] = useState(false);
-  const [emailError, setEmailError] = useState(null);
-  const [passwordError, setPasswordError] = useState(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
 
   const handleLogin = () => {
@@ -56,9 +55,9 @@ const LoginCard = () => {
         active={forgotPasswordPopup}
         closeForgetPasswordpage={() => setForgotPasswordPopup(false)}
       />
-      <div className="flex  justify-center items-center ">
+      <div className="flex justify-center items-center">
         <div className="flex flex-col gap-4">
-          <div className="flex flex-col justify-center items-center ">
+          <div className="flex flex-col justify-center items-center">
             <img
               src={avatar}
               alt="avatar"
@@ -72,7 +71,7 @@ const LoginCard = () => {
 
           {!viaphoto ? (
             <div className="flex items-center gap-2 text-sm font-normal justify-center mb-8">
-              <span className="text-[#79716D] "> via email or</span>
+              <span className="text-[#79716D]">via email or</span>
               <img src={camera} alt="camera" className="w-4 h-4" />
               <span
                 className="text-[#FFFFFF] cursor-pointer border-b border-dotted"
@@ -83,7 +82,7 @@ const LoginCard = () => {
             </div>
           ) : (
             <div className="flex items-center gap-2 text-sm font-normal justify-center mb-8">
-              <span className="text-[#79716D] "> via Photo login or</span>
+              <span className="text-[#79716D]">via Photo login or</span>
               <img src={Email} alt="camera" className="w-4 h-4" />
               <span
                 className="text-[#FFFFFF] cursor-pointer border-b border-dotted"
@@ -117,9 +116,7 @@ const LoginCard = () => {
                 className="w-full"
               />
 
-              <Button className="" onClick={handleLogin}>
-                Enter
-              </Button>
+              <Button onClick={handleLogin}>Enter</Button>
 
               <div
                 className="text-[#69696C] font-normal text-sm cursor-pointer mb-1"

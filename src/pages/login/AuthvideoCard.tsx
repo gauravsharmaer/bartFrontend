@@ -268,10 +268,8 @@ const AuthvideoCard = () => {
         throw new Error(errorData.message || "Login failed");
       }
 
-      const data = await response.json();
-      localStorage.setItem("user_id", data.user_id);
+      await response.json();
       console.log("Login successful");
-
       setFaceDescriptors([]);
       descriptorsRef.current = []; // Clear ref as well
       dispatch(handleFacialAuth(true));
