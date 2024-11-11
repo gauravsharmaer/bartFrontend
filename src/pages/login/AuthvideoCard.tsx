@@ -5,7 +5,7 @@ import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import Eye from "../../assets/eye.svg";
 import Face from "../../assets/Face.gif";
-import { Button } from "../../components/ui/button";
+// import { Button } from "../../components/ui/button";
 import { useDispatch } from "react-redux";
 import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
@@ -268,8 +268,10 @@ const AuthvideoCard = () => {
         throw new Error(errorData.message || "Login failed");
       }
 
-      await response.json();
+      const data = await response.json();
+      localStorage.setItem("user_id", data.user_id);
       console.log("Login successful");
+
       setFaceDescriptors([]);
       descriptorsRef.current = []; // Clear ref as well
       dispatch(handleFacialAuth(true));
@@ -341,6 +343,7 @@ const AuthvideoCard = () => {
   }, [isVerifying, handleBlinkDetection, handleHeadMovement]);
 
   const warmupAnalysis = useCallback(async () => {
+    console.log("Warmup analysis called");
     if (!webcamRef.current || !isModelLoaded) return;
 
     const imageSrc = webcamRef.current.getScreenshot();
@@ -475,46 +478,101 @@ const AuthvideoCard = () => {
 
   return (
     <div className="rounded-2xl overflow-hidden">
-      {/* {warmupCount < REQUIRED_WARMUP_SHOTS && isWebcamReady && (
-        <div className="text-sm text-gray-500">
-          Warming up camera: {warmupCount}/{REQUIRED_WARMUP_SHOTS}
-          <div className="w-full h-2 bg-gray-200 rounded">
-            <div
-              className="h-full bg-blue-500 rounded transition-all duration-300"
-              style={{
-                width: `${(warmupCount / REQUIRED_WARMUP_SHOTS) * 100}%`,
-              }}
-            />
-          </div>
-        </div>
-      )} */}
       {!isAnalyzing && !showGif && (
-        <Button
-          className="mb-4"
-          onClick={startLivenessCheck}
-          disabled={
-            !isModelLoaded ||
-            !isWebcamReady ||
-            warmupCount < REQUIRED_WARMUP_SHOTS
-          }
-        >
-          {!isModelLoaded
-            ? "Loading Ai Models..."
-            : !isWebcamReady
-            ? "Initializing Camera..."
-            : warmupCount < REQUIRED_WARMUP_SHOTS
-            ? `Warming up camera (${warmupCount}/${REQUIRED_WARMUP_SHOTS})`
-            : "Start Liveness Check"}
-        </Button>
+        <div className="flex flex-col items-center gap-2 ">
+          {!isModelLoaded ? (
+            <>
+              <div className="flex items-center gap-2 mb-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+                <span className="text-white">Loading ...</span>
+              </div>
+            </>
+          ) : !isWebcamReady ? (
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
+              <span className="text-white">Initializing Camera...</span>
+            </div>
+          ) : warmupCount < REQUIRED_WARMUP_SHOTS ? (
+            <div className="w-full max-w-xs mb-4">
+              <div className="flex items-center gap-2">
+                <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent relative bottom-1" />
+                <div className="text-white text-center mb-2 ">
+                  Warming up camera...
+                </div>
+              </div>
+              <div className="w-full h-2 bg-gray-700 rounded-full">
+                <div
+                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
+                  style={{
+                    width: `${(warmupCount / REQUIRED_WARMUP_SHOTS) * 100}%`,
+                  }}
+                />
+              </div>
+            </div>
+          ) : (
+            <></>
+            // <Button
+            //   className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
+            //   onClick={startLivenessCheck}
+            // >
+            //   Start Liveness Check
+            // </Button>
+          )}
+        </div>
       )}
-      {!showGif && (
+
+      {/* {!showGif ? (
         <Webcam
           audio={false}
           ref={webcamRef}
           screenshotFormat="image/jpeg"
-          className="w-64 h-60 object-cover rounded-2xl flex justify-center items-center"
+          className="w-64 h-60 object-cover rounded-2xl flex justify-center items-center bg-gray-100 "
         />
+      ) : null} */}
+      {!showGif && (
+        <div className="relative w-64 h-60">
+          <Webcam
+            audio={false}
+            ref={webcamRef}
+            screenshotFormat="image/jpeg"
+            className="object-cover rounded-2xl flex justify-center items-center bg-gray-100"
+          />
+          {!isWebcamReady && (
+            // <div className="absolute inset-0 flex justify-center items-center bg-gray-100 rounded-2xl">
+            //   <div className="animate-spin rounded-full h-8 w-8 border-4  border-purple-500 border-t-transparent " />
+            // </div>
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-2xl">
+              <div className="animate-pulse flex space-x-4">
+                <div className="rounded-full bg-slate-700 h-10 w-10"></div>
+                <div className="flex-1 space-y-6 py-1">
+                  <div className="h-2 bg-slate-700 rounded"></div>
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                      <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                    </div>
+                    <div className="h-2 bg-slate-700 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
+
+      {!isAnalyzing &&
+      !showGif &&
+      isModelLoaded &&
+      isWebcamReady &&
+      warmupCount >= REQUIRED_WARMUP_SHOTS ? (
+        <p
+          className="  cursor-pointer bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text hover:from-purple-600 hover:to-pink-600"
+          onClick={startLivenessCheck}
+        >
+          Start Liveness Check
+        </p>
+      ) : null}
+
       <div className="text-white text-center">
         {isAnalyzing && !showGif && (
           <>
@@ -547,3 +605,45 @@ const AuthvideoCard = () => {
 };
 
 export default AuthvideoCard;
+
+//function recreation diagram
+
+// +---------------------+
+// | getNextInstruction  |
+// +---------------------+
+//            |
+//            v
+// +---------------------+
+// |   actionCompleted    |
+// +---------------------+
+//            |
+// +----------+----------+
+// |                     |
+// v                     v
+// +---------------------+  +---------------------+
+// | handleHeadMovement  |  | handleBlinkDetection |
+// +---------------------+  +---------------------+
+//                    |
+//                    v
+//       +---------------------------+
+//       | calculateEyeAspectRatio   |
+//       +---------------------------+
+
+// +---------------------+
+// | dispatch            |
+// | calculateAverageDescriptor |
+// +---------------------+
+//            |
+//            v
+// +---------------------+
+// |   handlePhotoLogin   |
+// +---------------------+
+
+// +---------------------+
+// | startLivenessCheck  |
+// +---------------------+
+//            |
+//            v
+// +---------------------+
+// |   analyzeFrame      |
+// +---------------------+

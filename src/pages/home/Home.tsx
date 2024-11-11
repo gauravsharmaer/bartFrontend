@@ -2,12 +2,16 @@
 import Card from "../../components/ui/card";
 import laptopIcon from "../../assets/laptop.svg";
 import passwordIcon from "../../assets/password.svg";
+import PasswordResetUi from "./PsswordResetUi";
 import compuerIcon from "../../assets/computer-settings.svg";
 import { useState } from "react";
 import wifiIcon from "../../assets/wifi.svg";
 import lightningIcon from "../../assets/lightning.svg";
+import cleaningIcon from "../../assets/cleaning-brush.svg";
+import repairIcon from "../../assets/repair-tools.svg";
 // import PasswordResetAgent from "../passwordResetAgent/PasswordResetAgent";
 import Navbar from "../../components/Navbar";
+import PasswordIcon from "../../assets/password.svg";
 // import KnowledgeBase from "../knowledgeBase/KnowledgeBase";
 import PlusIcon from "../../assets/plus-circle.svg";
 import IconArrow from "../../assets/arrow-circle-up.svg";
@@ -20,7 +24,8 @@ const Home = () => {
     >
       <div className="flex justify-between w-[100%] flex-row">
         <div className="flex h-screen   ">
-          <Navbar />
+          {" "}
+          <Navbar />{" "}
         </div>
 
         <div className=" w-full justify-center items-center flex flex-col ">
@@ -30,8 +35,8 @@ const Home = () => {
           >
             {!passwordResetAgent ? (
               <div>
-                <div className="flex flex-col gap-3">
-                  <div className="flex flex-row gap-2 items-center mb-4 justify-center">
+                <div className="flex flex-col gap-3 xl:pl-16">
+                  <div className="flex flex-row gap-2 items-center mb-12 justify-center">
                     <img
                       src={lightningIcon}
                       alt="lightning"
@@ -42,31 +47,31 @@ const Home = () => {
                     </div>
                   </div>
 
-                  <div className="flex flex-col  gap-3 w-[60%] h-[400px] flex-wrap  ">
+                  <div className="flex flex-col  gap-3 max-w-[60%] h-[400px] flex-wrap">
                     <Card
-                      title="Seamlessly request and track new equipment approvals"
+                      title="Reset your application passwords with ease."
                       onClick={() => setPasswordResetAgent(true)}
+                      icon={PasswordIcon}
+                    />
+                    <Card
+                      title="Setup,maintain and troubleshoot all your devices."
+                      icon={repairIcon}
+                    />
+                    <Card
+                      title="Seamlessly request and track new equipment approvals"
                       icon={laptopIcon}
                     />
                     <Card
-                      title="Seamlessly request and track new equipment approvals"
-                      icon={passwordIcon}
-                    />
-                    <Card
-                      title="Seamlessly request and track new equipment approvals"
-                      icon={laptopIcon}
-                    />
-                    <Card
-                      title="Seamlessly request and track new equipment approvals"
+                      title="Install software with guided instructions and ticket updates."
                       icon={compuerIcon}
                     />
                     <Card
-                      title="Seamlessly request and track new equipment approvals"
+                      title="Detect and fix WiFi issues with real-time support."
                       icon={wifiIcon}
                     />
                     <Card
-                      title="Seamlessly request and track new equipment approvals"
-                      icon={laptopIcon}
+                      title="Schedule equipment maintenence effortlessly"
+                      icon={cleaningIcon}
                     />
                   </div>
                 </div>
@@ -74,7 +79,7 @@ const Home = () => {
             ) : (
               // <PasswordResetAgent />
               // <KnowledgeBase />
-              <p>Hello</p>
+              <PasswordResetUi />
             )}
 
             {!passwordResetAgent && (
@@ -118,6 +123,7 @@ const Home = () => {
       </div>
     </div>
   );
+  // return <div>Hello</div>;
 };
 
 export default Home;

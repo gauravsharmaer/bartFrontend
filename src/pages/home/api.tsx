@@ -1,0 +1,131 @@
+interface APIError {
+  message: string;
+  status?: number;
+}
+
+interface AskRequest {
+  question: string;
+  user_id: string;
+}
+
+interface AskResponse {
+  success: boolean;
+  message: string;
+}
+
+interface VerifyOTPRequest {
+  otp: number;
+  email: string;
+  chat_id: string;
+}
+
+interface VerifyOTPResponse {
+  success: boolean;
+  message: string;
+}
+
+const API_BASE_URL = "https://bart-api-bd05237bdea5.herokuapp.com";
+
+export const askBart = async (data: AskRequest): Promise<AskResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/ask`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw {
+        message: responseData.message || "Ask request failed",
+        status: response.status,
+      } as APIError;
+    }
+
+    return responseData as AskResponse;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error("Invalid response format from server");
+    }
+
+    if ((error as APIError).status) {
+      const apiError = error as APIError;
+      throw new Error(
+        `Ask request failed (${apiError.status}): ${apiError.message}`
+      );
+    }
+
+    throw new Error(
+      "An unexpected error occurred while processing your question"
+    );
+  }
+};
+
+export const verifyOTP = async (
+  data: VerifyOTPRequest
+): Promise<VerifyOTPResponse> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/verification/verify_otp`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+      body: JSON.stringify(data),
+    });
+
+    const responseData = await response.json();
+
+    if (!response.ok) {
+      throw {
+        message: responseData.message || "Verification failed",
+        status: response.status,
+      } as APIError;
+    }
+
+    return responseData as VerifyOTPResponse;
+  } catch (error) {
+    if (error instanceof SyntaxError) {
+      throw new Error("Invalid response format from server");
+    }
+
+    if ((error as APIError).status) {
+      const apiError = error as APIError;
+      throw new Error(
+        `OTP verification failed (${apiError.status}): ${apiError.message}`
+      );
+    }
+
+    throw new Error("An unexpected error occurred during OTP verification");
+  }
+};
+
+// Usage examples:
+/*
+// Ask Bot Example
+try {
+  const result = await askBart({
+    question: "hey bart password reset",
+    user_id: "67223759bc24b443f22dcd9b"
+  });
+  console.log('Response received:', result);
+} catch (error) {
+  console.error('Ask request failed:', error);
+}
+
+// Verify OTP Example
+try {
+  const result = await verifyOTP({
+    otp: 123456,
+    email: "user@example.com",
+    chat_id: "chat123"
+  });
+  console.log('OTP verified:', result);
+} catch (error) {
+  console.error('Verification failed:', error);
+}
+*/
