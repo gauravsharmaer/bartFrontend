@@ -17,7 +17,7 @@ interface ApiError {
 const REQUIRED_WARMUP_SHOTS = 4;
 const MAX_NO_FACE_FRAMES = 10;
 const MODEL_URL = "/models";
-const API_URL = "http://localhost:4000/api/users/login-with-face";
+const API_URL = "http://localhost:4000/api/users/verify-user-face";
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.3;
 const HEAD_TURN_THRESHOLD = 0.05;
@@ -31,7 +31,13 @@ type Instructions = {
   blink: JSX.Element;
 };
 
-const AuthvideoCard = () => {
+interface VerifyAuthProps {
+  onVerificationComplete?: () => void;
+}
+
+const AuthvideoCard: React.FC<VerifyAuthProps> = ({
+  onVerificationComplete,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState("");
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -43,6 +49,7 @@ const AuthvideoCard = () => {
   const [isVerifying, setIsVerifying] = useState(false);
   const [isWebcamReady, setIsWebcamReady] = useState(false);
   const [warmupCount, setWarmupCount] = useState(0);
+  const [showCamera, setShowCamera] = useState(true);
 
   const webcamRef = useRef<Webcam>(null);
   const analyzeIntervalRef = useRef<number | null>(null);
@@ -53,6 +60,7 @@ const AuthvideoCard = () => {
   const descriptorsRef = useRef<Float32Array[]>([]);
   console.log(faceDescriptors);
   const generateActionSequence = useCallback((): string[] => {
+    console.log("generateActionSequence called");
     const actions = ["left", "right", "blink"];
     return actions.sort(() => 0.5 - Math.random()).slice(0, 3);
   }, []);
@@ -76,6 +84,7 @@ const AuthvideoCard = () => {
   );
 
   const getNextInstruction = useCallback((): string | JSX.Element | null => {
+    console.log("Warmup analysis called");
     const action = actionSequenceRef.current[0];
     if (action === "Verifying...") {
       setShowGif(true);
@@ -86,6 +95,7 @@ const AuthvideoCard = () => {
   }, [instructions]);
 
   const actionCompleted = useCallback(() => {
+    console.log("Warmup analysis called");
     actionSequenceRef.current.shift();
     setProgress((prevProgress) => {
       const newProgress = prevProgress + 100 / 3;
@@ -98,13 +108,14 @@ const AuthvideoCard = () => {
       setInstruction("Verifying...");
       setIsVerifying(true);
       stopAnalysis();
-      void handlePhotoLogin();
+      void handleVerification();
     }
     blinkCountRef.current = 0;
   }, [getNextInstruction]);
 
   const calculateEyeAspectRatio = useCallback(
     (eye: faceapi.Point[], otherEye: faceapi.Point[]): number => {
+      console.log("calculateEyeAspectRatio called");
       if (eye.length < 6 || otherEye.length < 6) return 1;
 
       try {
@@ -143,6 +154,7 @@ const AuthvideoCard = () => {
           >
         >
     ) => {
+      console.log("handleBlinkDetection called");
       const leftEye = detections.landmarks.getLeftEye();
       const rightEye = detections.landmarks.getRightEye();
 
@@ -178,6 +190,7 @@ const AuthvideoCard = () => {
         >,
       expectedAction: string
     ) => {
+      console.log("handleHeadMovement called");
       const jawOutline = detections.landmarks.getJawOutline();
       const nose = detections.landmarks.getNose();
       const jawCenter = jawOutline[8];
@@ -199,6 +212,7 @@ const AuthvideoCard = () => {
 
   const calculateAverageDescriptor = useCallback(
     (descriptors: Float32Array[]): number[] => {
+      console.log("calculateAverageDescriptor called");
       if (descriptors.length === 0) return [];
 
       const sum = descriptors.reduce((acc, curr) => {
@@ -213,15 +227,86 @@ const AuthvideoCard = () => {
     []
   );
 
-  const handlePhotoLogin = useCallback(async () => {
+  //   const handlePhotoLogin = useCallback(async () => {
+  //     try {
+  //       setIsVerifying(true);
+  //       console.log("Starting login process...");
+
+  //       // Initial wait
+  //       await new Promise((resolve) => setTimeout(resolve, 1000));
+
+  //       // Get descriptors from ref
+  //       let currentDescriptors = descriptorsRef.current;
+  //       console.log(`Initial descriptors count: ${currentDescriptors.length}`);
+
+  //       const startTime = Date.now();
+  //       const TIMEOUT = 9000;
+  //       const MIN_DESCRIPTORS = 5;
+
+  //       while (currentDescriptors.length < MIN_DESCRIPTORS) {
+  //         if (Date.now() - startTime > TIMEOUT) {
+  //           currentDescriptors = descriptorsRef.current; // One final check
+  //           if (currentDescriptors.length < MIN_DESCRIPTORS) {
+  //             console.log(
+  //               `Timeout reached with ${currentDescriptors.length} descriptors`
+  //             );
+  //             throw new Error(
+  //               `Insufficient descriptors: ${currentDescriptors.length}`
+  //             );
+  //           }
+  //           break;
+  //         }
+  //         await new Promise((resolve) => setTimeout(resolve, 100));
+  //         currentDescriptors = descriptorsRef.current;
+  //         console.log(
+  //           `Waiting... Current descriptors: ${currentDescriptors.length}`
+  //         );
+  //       }
+
+  //       console.log(`Proceeding with ${currentDescriptors.length} descriptors`);
+  //       const averageDescriptor = calculateAverageDescriptor(currentDescriptors);
+
+  //       const response = await fetch(API_URL, {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         credentials: "include",
+  //         body: JSON.stringify({
+  //           faceDescriptor: averageDescriptor,
+  //         }),
+  //       });
+
+  //       if (!response.ok) {
+  //         const errorData = (await response.json()) as ApiError;
+  //         throw new Error(errorData.message || "Login failed");
+  //       }
+
+  //       await response.json();
+  //       console.log("Login successful");
+  //       setFaceDescriptors([]);
+  //       descriptorsRef.current = []; // Clear ref as well
+  //       dispatch(handleFacialAuth(true));
+  //     } catch (error) {
+  //       const errorMessage =
+  //         error instanceof Error
+  //           ? error.message
+  //           : "Photo login failed. Please try again.";
+  //       setError(errorMessage);
+  //       console.error("Photo login error:", error);
+  //     } finally {
+  //       setIsVerifying(false);
+  //     }
+  //   }, [dispatch, calculateAverageDescriptor]); // Note: removed faceDescriptors dependency
+
+  const handleVerification = useCallback(async () => {
+    console.log("handleVerification called");
     try {
       setIsVerifying(true);
-      console.log("Starting login process...");
+      console.log("Starting verification process...");
 
-      // Initial wait
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Get descriptors from ref
       let currentDescriptors = descriptorsRef.current;
       console.log(`Initial descriptors count: ${currentDescriptors.length}`);
 
@@ -231,11 +316,8 @@ const AuthvideoCard = () => {
 
       while (currentDescriptors.length < MIN_DESCRIPTORS) {
         if (Date.now() - startTime > TIMEOUT) {
-          currentDescriptors = descriptorsRef.current; // One final check
+          currentDescriptors = descriptorsRef.current;
           if (currentDescriptors.length < MIN_DESCRIPTORS) {
-            console.log(
-              `Timeout reached with ${currentDescriptors.length} descriptors`
-            );
             throw new Error(
               `Insufficient descriptors: ${currentDescriptors.length}`
             );
@@ -244,13 +326,10 @@ const AuthvideoCard = () => {
         }
         await new Promise((resolve) => setTimeout(resolve, 100));
         currentDescriptors = descriptorsRef.current;
-        console.log(
-          `Waiting... Current descriptors: ${currentDescriptors.length}`
-        );
       }
 
-      console.log(`Proceeding with ${currentDescriptors.length} descriptors`);
       const averageDescriptor = calculateAverageDescriptor(currentDescriptors);
+      const userId = localStorage.getItem("user_id");
 
       const response = await fetch(API_URL, {
         method: "POST",
@@ -259,34 +338,41 @@ const AuthvideoCard = () => {
         },
         credentials: "include",
         body: JSON.stringify({
+          userId: userId,
           faceDescriptor: averageDescriptor,
         }),
       });
 
       if (!response.ok) {
         const errorData = (await response.json()) as ApiError;
-        throw new Error(errorData.message || "Login failed");
+        throw new Error(errorData.message || "Verification failed");
       }
 
       const result = await response.json();
-      localStorage.setItem("user_id", result.user_id);
-      console.log("Login successful");
-      setFaceDescriptors([]);
-      descriptorsRef.current = []; // Clear ref as well
-      dispatch(handleFacialAuth(true));
+      if (result.isMatch) {
+        console.log("Face verified successfully");
+        setFaceDescriptors([]);
+        descriptorsRef.current = [];
+        dispatch(handleFacialAuth(true));
+        setShowCamera(false);
+        onVerificationComplete?.();
+      } else {
+        throw new Error("Face verification failed - no match found");
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Photo login failed. Please try again.";
+          : "Face verification failed. Please try again.";
       setError(errorMessage);
-      console.error("Photo login error:", error);
+      console.error("Verification error:", error);
     } finally {
       setIsVerifying(false);
     }
-  }, [dispatch, calculateAverageDescriptor]); // Note: removed faceDescriptors dependency
+  }, [dispatch, calculateAverageDescriptor, onVerificationComplete]);
 
   const stopAnalysis = useCallback(() => {
+    console.log("Stopping analysis");
     setIsAnalyzing(false);
     if (analyzeIntervalRef.current) {
       clearInterval(analyzeIntervalRef.current);
@@ -301,6 +387,7 @@ const AuthvideoCard = () => {
   }, []);
 
   const analyzeFrame = useCallback(async () => {
+    console.log("Analyzing frame");
     if (!webcamRef.current || isVerifying) return;
 
     const imageSrc = webcamRef.current.getScreenshot();
@@ -369,6 +456,7 @@ const AuthvideoCard = () => {
   }, [isModelLoaded]);
 
   const startLivenessCheck = useCallback(async () => {
+    console.log("startLivenessCheck called");
     if (!isModelLoaded || !isWebcamReady) {
       setError("Please wait for camera and models to initialize...");
       return;
@@ -520,15 +608,7 @@ const AuthvideoCard = () => {
         </div>
       )}
 
-      {/* {!showGif ? (
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          className="w-64 h-60 object-cover rounded-2xl flex justify-center items-center bg-gray-100 "
-        />
-      ) : null} */}
-      {!showGif && (
+      {!showGif && showCamera && (
         <div className="relative w-64 h-60">
           <Webcam
             audio={false}

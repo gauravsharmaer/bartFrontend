@@ -6,11 +6,24 @@ interface APIError {
 interface AskRequest {
   question: string;
   user_id: string;
+  chat_id?: string;
 }
 
 interface AskResponse {
-  success: boolean;
-  message: string;
+  question: string;
+  answer: string;
+  chat_id: string;
+  display_settings: {
+    vertical_bar: boolean;
+    button_display: boolean;
+    options: {
+      buttons: string[];
+    };
+    message_history: {
+      question: string;
+      answer: string;
+    }[];
+  };
 }
 
 interface VerifyOTPRequest {
@@ -28,13 +41,19 @@ const API_BASE_URL = "https://bart-api-bd05237bdea5.herokuapp.com";
 
 export const askBart = async (data: AskRequest): Promise<AskResponse> => {
   try {
+    const requestBody = {
+      question: data.question,
+      user_id: data.user_id,
+      ...(data.chat_id && { chat_id: data.chat_id }),
+    };
+
     const response = await fetch(`${API_BASE_URL}/ask`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
       },
-      body: JSON.stringify(data),
+      body: JSON.stringify(requestBody),
     });
 
     const responseData = await response.json();
