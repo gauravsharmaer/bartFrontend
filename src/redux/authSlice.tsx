@@ -3,6 +3,7 @@ import { toast } from "react-toastify";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export interface AuthState {
+  loading: boolean;
   authenticated: boolean;
 
   logged_in: boolean;
@@ -17,6 +18,7 @@ export interface AuthState {
 }
 
 const initialState: AuthState = {
+  loading: true,
   authenticated: false,
   logged_in: false,
   data: {
@@ -89,9 +91,17 @@ export const authSlice = createSlice({
     builder.addCase(currentProfile.fulfilled, (state, action) => {
       if (action.payload.data) {
         state.data = action.payload.data;
-
         state.authenticated = true;
+        state.loading = false;
       }
+    });
+
+    builder.addCase(currentProfile.pending, (state) => {
+      state.loading = true;
+    });
+
+    builder.addCase(userLogin.pending, (state) => {
+      state.loading = true;
     });
   },
 });
