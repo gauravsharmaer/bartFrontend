@@ -209,11 +209,11 @@ const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
         </nav>
       </div>
 
-      <div className={`flex items-center rounded-lg w-full transition-all duration-700 p-4 ease-in-out ${!props.collapsed ? "bg-[#252525]" : ""} `}>
+      <div className={`flex items-center rounded-lg w-full transition-all duration-700 ease-in-out ${!props.collapsed ? "bg-[#252525]  p-4" : ""} `}>
         <img
           src={BART}
           alt="BART Logo"
-          className={` h-${props.collapsed ? "[30px]" : "[50px]"} mr-[10px] bg-white rounded-[5px] p-3 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120`}
+          className={` ${props.collapsed ? "h-[30px]" : "h-[50px] mr-[10px] p-3 px-[5px]"} w-auto  bg-white rounded-[5px]  transition-transform duration-300 ease-in-out hover:scale-120`}
         />
 
         {
