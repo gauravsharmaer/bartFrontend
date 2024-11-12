@@ -14,6 +14,7 @@ import IconArrow from "../../assets/arrow-circle-up.svg";
 
 const Home = () => {
   const [passwordResetAgent, setPasswordResetAgent] = useState(false);
+  const [input, setInput] = useState("");
   return (
     <div
       className="flex justify-center items-center h-screen
@@ -95,6 +96,8 @@ const Home = () => {
                   <input
                     type="text"
                     placeholder="Ask BART Genie"
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
                     className="w-[80%] flex bg-gray-800 p-2.5 rounded-full border border-[#3E3E3E] outline-none text-[#FFFFFF] px-12"
                   />
 
