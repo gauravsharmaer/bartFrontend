@@ -5,7 +5,7 @@ import PasswordResetUi from "./PsswordResetUi";
 import compuerIcon from "../../assets/computer-settings.svg";
 import { useState } from "react";
 import wifiIcon from "../../assets/wifi.svg";
-import lightningIcon from "../../assets/Lightning.svg"
+import lightningIcon from "../../assets/Lightning.svg";
 import cleaningIcon from "../../assets/cleaning-brush.svg";
 import repairIcon from "../../assets/repair-tools.svg";
 import PlusIcon from "../../assets/plus-circle.svg";
@@ -14,21 +14,13 @@ import IconArrow from "../../assets/arrow-circle-up.svg";
 const Home = () => {
   const [passwordResetAgent, setPasswordResetAgent] = useState(false);
   return (
-
-
     <div className="w-full justify-center items-center h-screen flex flex-col p-4">
-      <div
-        className="garadientBG bg-cover bg-center justify-center w-full h-full items-center flex rounded-xl flex-col px-10"
-      >
+      <div className="garadientBG bg-cover bg-center justify-center w-full h-full items-center flex rounded-xl flex-col px-10">
         {!passwordResetAgent ? (
           <div>
             <div className="flex flex-col gap-3 xl:pl-16">
               <div className="flex flex-row gap-2 items-center mb-12 justify-center">
-                <img
-                  src={lightningIcon}
-                  alt="lightning"
-                  className="w-4 h-4"
-                />
+                <img src={lightningIcon} alt="lightning" className="w-4 h-4" />
                 <div className="text-[16px] font-normal text-[#FFFFFF] opacity-40">
                   Suggested templates
                 </div>
@@ -64,7 +56,9 @@ const Home = () => {
             </div>
           </div>
         ) : (
-          <PasswordResetUi />
+          <div className="w-full h-full">
+            <PasswordResetUi />
+          </div>
         )}
 
         {!passwordResetAgent && (
@@ -99,7 +93,6 @@ const Home = () => {
         )}
       </div>
     </div>
-
   );
 };
 

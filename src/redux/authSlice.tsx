@@ -92,8 +92,8 @@ export const authSlice = createSlice({
       if (action.payload.data) {
         state.data = action.payload.data;
         state.authenticated = true;
-        state.loading = false;
       }
+      state.loading = false;
     });
 
     builder.addCase(currentProfile.pending, (state) => {

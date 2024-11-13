@@ -86,7 +86,7 @@ export const askBart = async (data: AskRequest): Promise<AskResponse> => {
 
 export const verifyOTP = async (
   data: VerifyOTPRequest
-): Promise<VerifyOTPResponse> => {
+): Promise<AskResponse> => {
   try {
     const response = await fetch(`${API_BASE_URL}/verification/verify_otp`, {
       method: "POST",

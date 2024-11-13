@@ -20,7 +20,7 @@ const PasswordResetUi = () => {
   const [loading, setLoading] = useState(false);
   const [inputMessage, setInputMessage] = useState("");
   const [chatId, setChatId] = useState<string | null>(null);
-
+  console.log(localStorage.getItem("chat_id"));
   // Initial API call when page loads
   useEffect(() => {
     const initialMessage = "Hey bart reset my password";
@@ -31,7 +31,7 @@ const PasswordResetUi = () => {
     // Make API call
     askBart({
       question: initialMessage,
-      user_id: "67223759bc24b443f22dcd9b",
+      user_id: localStorage.getItem("user_id") || "",
     })
       .then((result) => {
         console.log("API Response:", result);
@@ -58,9 +58,11 @@ const PasswordResetUi = () => {
         setMessages([userMessage, botMessage]);
 
         if (result.chat_id) {
+          localStorage.setItem("chat_id", result.chat_id);
           setChatId(result.chat_id);
         }
       })
+
       .catch((error) => {
         console.error("API Error:", error);
 
@@ -101,12 +103,12 @@ const PasswordResetUi = () => {
     try {
       const result = await askBart({
         question: inputMessage,
-        user_id: "67223759bc24b443f22dcd9b",
-        chat_id: chatId || undefined,
+        user_id: localStorage.getItem("user_id") || "",
+        chat_id: localStorage.getItem("chat_id") || "",
       });
 
       console.log("API Response:", result);
-
+      localStorage.setItem("chat_id", result.chat_id);
       const botMessage: Message = {
         text: result.answer || "No response received",
         isUserMessage: false,
@@ -136,11 +138,20 @@ const PasswordResetUi = () => {
     }
   };
 
+  const handleNewMessage = (message: Message) => {
+    setMessages((prev) => [...prev, message]);
+  };
+
   return (
     <div className="flex flex-col h-[80vh] relative">
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="w-[85%] h-full overflow-y-auto p-4  ">
         {messages.map((message, index) => (
-          <ChatMessage key={index} message={message} />
+          <ChatMessage
+            key={index}
+            message={message}
+            chatId={chatId || ""}
+            onNewMessage={handleNewMessage}
+          />
         ))}
 
         {loading && (

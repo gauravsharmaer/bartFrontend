@@ -25,8 +25,7 @@ import {
   REACT_APP_AWS_ACCESS_KEY_ID,
   REACT_APP_AWS_SECRET_ACCESS_KEY,
   REACT_APP_S3_BUCKET,
-} from "../config"
-
+} from "../config";
 
 interface MenuItem {
   id: number;
@@ -64,11 +63,10 @@ const s3Client = new S3Client({
   },
 });
 
-const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
+const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
   const [userName, setUserName] = useState<string>("");
   const [profilePhoto, setProfilePhoto] = useState<string>("");
   const [fullName, setFullName] = useState<string>("");
-
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
@@ -119,7 +117,8 @@ const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
     <aside
       className={`bg-black z-[200] fixed left-0 top-0 bottom-0 text-white border-r-2 border-[#313131] 
         flex flex-col items-center justify-between
-        transition-all duration-700 ease-in-out  ${props.collapsed ? "w-[80px] p-[10px]" : "w-[265px] p-5"
+        transition-all duration-700 ease-in-out  ${
+          props.collapsed ? "w-[80px] p-[10px]" : "w-[265px] p-5"
         }`}
     >
       <button
@@ -209,16 +208,24 @@ const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
         </nav>
       </div>
 
-      <div className={`flex items-center rounded-lg w-full transition-all duration-700 p-4 ease-in-out ${!props.collapsed ? "bg-[#252525]" : ""} `}>
+      <div
+        className={`flex items-center rounded-lg w-full transition-all duration-700 ease-in-out ${
+          !props.collapsed ? "bg-[#252525]  p-4" : ""
+        } `}
+      >
         <img
           src={BART}
           alt="BART Logo"
-          className={` h-${props.collapsed ? "[30px]" : "[50px]"} mr-[10px] bg-white rounded-[5px] p-3 px-[5px] transition-transform duration-300 ease-in-out hover:scale-120`}
+          className={` ${
+            props.collapsed ? "h-[30px]" : "h-[50px] mr-[10px] p-3 px-[5px]"
+          } w-auto  bg-white rounded-[5px]  transition-transform duration-300 ease-in-out hover:scale-120`}
         />
 
-        {
-          props.collapsed ? null : <>
-            <div className={`flex flex-col transition-all duration-700 ease-in-out  `}>
+        {props.collapsed ? null : (
+          <>
+            <div
+              className={`flex flex-col transition-all duration-700 ease-in-out  `}
+            >
               <div className="flex flex-row items-center gap-2">
                 <p className="font-normal text-[14px]">BART</p>
                 <img
@@ -232,9 +239,8 @@ const Navbar = (props: { collapsed: boolean, onToggle: () => void }) => {
               </div>
             </div>
           </>
-        }
+        )}
       </div>
-
     </aside>
   );
 };
