@@ -67,7 +67,6 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
   const [profilePhoto, setProfilePhoto] = useState<string>(
     "path/to/default/image.jpg"
   );
-  const [displayName, setDisplayName] = useState<string>("Default Name");
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
@@ -84,7 +83,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
           (await response.Body?.transformToString()) || "{}"
         );
         const fullNameFromData = userJson.fullName || "Default Name";
-        setDisplayName(fullNameFromData);
+
         localStorage.setItem("fullName", fullNameFromData);
 
         const profilePhotoUrl = `https://avatar.vercel.sh/jill`;
@@ -103,7 +102,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        setDisplayName("Default Name");
+
         setProfilePhoto("path/to/default/image.jpg");
       }
     };
@@ -143,7 +142,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
           >
             <div className="flex flex-col mt-2">
               <span className="mb-[2px] text-sm font-medium text-[#fff] flex justify-start">
-                {displayName}
+                {localStorage.getItem("name") || "Default Name"}
               </span>
               <small className="text-[#888] text-[12px] font-normal">
                 Product Manager
