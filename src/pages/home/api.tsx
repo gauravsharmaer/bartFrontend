@@ -1,3 +1,4 @@
+import { BART_API_URL } from "../../config";
 interface APIError {
   message: string;
   status?: number;
@@ -49,7 +50,7 @@ interface VerifyOTPResponse {
   };
 }
 
-const API_BASE_URL = "https://bart-api-bd05237bdea5.herokuapp.com";
+const API_BASE_URL = BART_API_URL;
 
 export const askBart = async (data: AskRequest): Promise<AskResponse> => {
   try {

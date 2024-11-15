@@ -1,7 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import { createAsyncThunk } from "@reduxjs/toolkit";
-
+import { API_URL } from "../config";
 export interface AuthState {
   loading: boolean;
   authenticated: boolean;
@@ -34,7 +34,7 @@ const initialState: AuthState = {
 export const userLogin = createAsyncThunk(
   "login",
   async (credentials: { email: string; password: string }) => {
-    const response = await fetch("http://localhost:4000/api/users/login", {
+    const response = await fetch(`${API_URL}/users/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -57,7 +57,7 @@ export const userLogin = createAsyncThunk(
 export const currentProfile = createAsyncThunk(
   "getCurrentProfile",
   async () => {
-    const response = await fetch("http://localhost:4000/api/users/profile", {
+    const response = await fetch(`${API_URL}/users/profile`, {
       method: "GET",
       credentials: "include",
     });

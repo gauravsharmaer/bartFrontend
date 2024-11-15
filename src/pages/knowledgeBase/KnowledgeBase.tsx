@@ -117,14 +117,6 @@
 //         },
 //       });
 
-//       const command = new InvokeAgentCommand({
-//         agentId: "U3YHVQFHVA",
-//         // agentId: "NBRGXSURUV",
-//         agentAliasId: "FS3BRWFZ15",
-//         sessionId: sessionId,
-//         inputText: input,
-//       });
-
 //       const response = await client.send(command);
 //       let fullResponse = "";
 //       const decoder = new TextDecoder("utf-8");

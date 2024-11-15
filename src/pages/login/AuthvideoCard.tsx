@@ -12,14 +12,14 @@ import { AppDispatch } from "../../redux/store";
 import { TinyFaceDetectorOptions } from "face-api.js";
 import debounce from "lodash/debounce";
 import { modelLoadingState } from "../../utils/modelState";
-
+import { API_URL } from "../../config";
 interface ApiError {
   message: string;
 }
 
 const MAX_NO_FACE_FRAMES = 10;
 // const MODEL_URL = "/models";
-const API_URL = "http://localhost:4000/api/users/login-with-face";
+const API_URL_FACE = `${API_URL}/users/login-with-face`;
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.4;
 const HEAD_TURN_THRESHOLD = 0.02;
@@ -262,7 +262,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
       console.log(`Proceeding with ${currentDescriptors.length} descriptors`);
       const averageDescriptor = calculateAverageDescriptor(currentDescriptors);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(API_URL_FACE, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

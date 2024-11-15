@@ -13,20 +13,10 @@ const AppRoutes = () => {
   ) as boolean;
   return (
     <Routes>
-      {/* <Route
-        path="/"
-        element={authenticated ? <Home /> : <Navigate to="/login" />}
-      /> */}
       <Route
         path="/"
         element={authenticated ? <Home /> : <Navigate to="/login" />}
       />
-      {/* <Route
-        path="/passwordResetagent"
-        element={
-          authenticated ? <PasswordResetAgent /> : <PasswordResetAgent />
-        }
-      /> */}
 
       <Route
         path="/signup"

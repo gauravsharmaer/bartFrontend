@@ -11,7 +11,7 @@ import Stepper from "../../components/Stepper";
 import usePasswordToggle from "../../hooks/usePasswordToggle";
 import AuthSwitcher from "../../components/AuthSwitcher";
 import * as faceapi from "face-api.js";
-
+import { API_URL } from "../../config";
 // Validation schemas
 const Step1Schema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters"),
@@ -368,7 +368,7 @@ const SignupCard = () => {
     }
 
     try {
-      const response = await fetch("http://localhost:4000/api/users/register", {
+      const response = await fetch(`${API_URL}/users/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

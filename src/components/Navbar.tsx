@@ -70,7 +70,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
-      const usernameFromStorage = "gauravsharma@yanthraa.com";
+      const usernameFromStorage = localStorage.getItem("email") || "";
 
       try {
         const userParams = {
@@ -82,9 +82,10 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
         const userJson = JSON.parse(
           (await response.Body?.transformToString()) || "{}"
         );
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const fullNameFromData = userJson.fullName || "Default Name";
 
-        localStorage.setItem("fullName", fullNameFromData);
+        localStorage.setItem("oage", fullNameFromData);
 
         const profilePhotoUrl = `https://avatar.vercel.sh/jill`;
 

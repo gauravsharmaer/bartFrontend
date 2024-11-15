@@ -10,14 +10,14 @@ import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
 import { TinyFaceDetectorOptions } from "face-api.js";
 import debounce from "lodash/debounce";
-
+import { API_URL } from "../../config";
 interface ApiError {
   message: string;
 }
 
 const MAX_NO_FACE_FRAMES = 10;
 const MODEL_URL = "/models";
-const API_URL = "http://localhost:4000/api/users/verify-user-face";
+const VERIFY_API_URL = `${API_URL}/users/verify-user-face`;
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.4;
 const HEAD_TURN_THRESHOLD = 0.04;
@@ -266,7 +266,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = ({
       const userId = localStorage.getItem("user_id");
       if (!userId) throw new Error("User ID not found");
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(VERIFY_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -493,10 +493,13 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = ({
       )}
 
       <div className="text-white text-center">
-        {isAnalyzing && !showGif && (
+        {isAnalyzing &&
+        isModelLoaded &&
+        faceDescriptors.length > 0 &&
+        descriptorsRef.current.length > 0 ? (
           <>
             <div className="text-white text-lg text-center ">
-              <div className=" text-white text-[14px] font-[400] flex justify-center items-center">
+              <div className="text-white text-[14px] font-[400] flex justify-center items-center">
                 {instruction}
               </div>
               <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-1">
@@ -507,6 +510,11 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = ({
               </div>
             </div>
           </>
+        ) : (
+          <div className="text-white text-[14px] font-[400] flex justify-center items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+            <span className="text-white">Initializing face detection...</span>
+          </div>
         )}
         {showGif && (
           <div className="rounded-lg flex justify-center items-center">
