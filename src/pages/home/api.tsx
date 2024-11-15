@@ -33,8 +33,20 @@ interface VerifyOTPRequest {
 }
 
 interface VerifyOTPResponse {
-  success: boolean;
-  message: string;
+  question: string;
+  answer: string;
+  chat_id: string;
+  display_settings: {
+    vertical_bar: boolean;
+    button_display: boolean;
+    options: {
+      buttons: string[];
+    };
+    message_history: {
+      question: string;
+      answer: string;
+    }[];
+  };
 }
 
 const API_BASE_URL = "https://bart-api-bd05237bdea5.herokuapp.com";

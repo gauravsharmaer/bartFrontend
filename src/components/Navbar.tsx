@@ -64,16 +64,14 @@ const s3Client = new S3Client({
 });
 
 const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
-  const [userName, setUserName] = useState<string>("");
-  const [profilePhoto, setProfilePhoto] = useState<string>("");
-  const [fullName, setFullName] = useState<string>("");
+  const [profilePhoto, setProfilePhoto] = useState<string>(
+    "path/to/default/image.jpg"
+  );
+  const [displayName, setDisplayName] = useState<string>("Default Name");
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
       const usernameFromStorage = "gauravsharma@yanthraa.com";
-
-      const decodedUsername = decodeURIComponent(usernameFromStorage);
-      setUserName(decodedUsername);
 
       try {
         const userParams = {
@@ -86,10 +84,10 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
           (await response.Body?.transformToString()) || "{}"
         );
         const fullNameFromData = userJson.fullName || "Default Name";
-        setFullName(fullNameFromData);
+        setDisplayName(fullNameFromData);
         localStorage.setItem("fullName", fullNameFromData);
 
-        const profilePhotoUrl = `https://${REACT_APP_S3_BUCKET}.s3.${REACT_APP_AWS_REGION}.amazonaws.com/facialdata/profile_images/${usernameFromStorage}.jpg`;
+        const profilePhotoUrl = `https://avatar.vercel.sh/jill`;
 
         try {
           const headCommand = new HeadObjectCommand({
@@ -105,7 +103,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-        setFullName("Default Name");
+        setDisplayName("Default Name");
         setProfilePhoto("path/to/default/image.jpg");
       }
     };
@@ -135,10 +133,17 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
             alt="Profile"
             className="rounded-full w-10 h-10 mt-2"
           />
-          <Box sx={{ visibility: props.collapsed ? "hidden" : "visible" }}>
+          <Box
+            sx={{
+              visibility: props.collapsed ? "hidden" : "visible",
+              opacity: props.collapsed ? 0 : 1,
+              transition: "all 0.1s ease-in-out",
+              transitionDelay: props.collapsed ? "0s" : "0.7s",
+            }}
+          >
             <div className="flex flex-col mt-2">
               <span className="mb-[2px] text-sm font-medium text-[#fff] flex justify-start">
-                {fullName || userName || "Default Name"}
+                {displayName}
               </span>
               <small className="text-[#888] text-[12px] font-normal">
                 Product Manager
@@ -194,8 +199,11 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
               <ListItemText
                 primary={item.name}
                 sx={{
-                  visibility: props.collapsed ? "hidden" : "visible",
                   marginLeft: "8px",
+                  visibility: props.collapsed ? "hidden" : "visible",
+                  opacity: props.collapsed ? 0 : 1,
+                  transition: "all 0.1s ease-in-out",
+                  transitionDelay: props.collapsed ? "0s" : "0.7s",
                   "& .MuiListItemText-primary": {
                     fontSize: "14px",
                     fontWeight: 400,
@@ -210,21 +218,27 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
 
       <div
         className={`flex items-center rounded-lg w-full transition-all duration-700 ease-in-out ${
-          !props.collapsed ? "bg-[#252525]  p-4" : ""
+          !props.collapsed ? "bg-[#252525]  p-4" : "bg-white p-2"
         } `}
       >
         <img
           src={BART}
           alt="BART Logo"
           className={` ${
-            props.collapsed ? "h-[30px]" : "h-[50px] mr-[10px] p-3 px-[5px]"
+            props.collapsed ? "h-[30px] " : "h-[50px] mr-[10px] p-3 px-[5px]"
           } w-auto  bg-white rounded-[5px]  transition-transform duration-300 ease-in-out hover:scale-120`}
         />
 
         {props.collapsed ? null : (
           <>
             <div
-              className={`flex flex-col transition-all duration-700 ease-in-out  `}
+              className={`flex flex-col transition-all duration-700 ease-in-out`}
+              style={{
+                visibility: props.collapsed ? "hidden" : "visible",
+                opacity: props.collapsed ? 0 : 1,
+                transition: "all 0.1s ease-in-out",
+                transitionDelay: props.collapsed ? "0s" : "0.7s",
+              }}
             >
               <div className="flex flex-row items-center gap-2">
                 <p className="font-normal text-[14px]">BART</p>

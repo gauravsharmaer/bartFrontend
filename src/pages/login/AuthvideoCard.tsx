@@ -1,29 +1,30 @@
-//working optimised code and frt time login
+//authproper new good working
 /* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
 import Eye from "../../assets/eye.svg";
 import Face from "../../assets/Face.gif";
-// import { Button } from "../../components/ui/button";
+
 import { useDispatch } from "react-redux";
 import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
+import { TinyFaceDetectorOptions } from "face-api.js";
+import debounce from "lodash/debounce";
+import { modelLoadingState } from "../../utils/modelState";
 
 interface ApiError {
   message: string;
 }
 
-const REQUIRED_WARMUP_SHOTS = 4;
 const MAX_NO_FACE_FRAMES = 10;
-const MODEL_URL = "/models";
+// const MODEL_URL = "/models";
 const API_URL = "http://localhost:4000/api/users/login-with-face";
 const BLINK_THRESHOLD = 0.3;
-const OPEN_EYE_THRESHOLD = 0.3;
-const HEAD_TURN_THRESHOLD = 0.05;
-const WARMUP_INTERVAL = 500;
+const OPEN_EYE_THRESHOLD = 0.4;
+const HEAD_TURN_THRESHOLD = 0.02;
 const ANALYSIS_INTERVAL = 500;
-// const MIN_DESCRIPTORS = 5; // Minimum number of descriptors needed
+const ANALYSIS_OPTIONS = new TinyFaceDetectorOptions({ inputSize: 224 });
 
 type Instructions = {
   right: string;
@@ -31,7 +32,11 @@ type Instructions = {
   blink: JSX.Element;
 };
 
-const AuthvideoCard = () => {
+interface VerifyAuthProps {
+  onVerificationComplete?: () => void;
+}
+
+const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState("");
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -42,25 +47,24 @@ const AuthvideoCard = () => {
   const [faceDescriptors, setFaceDescriptors] = useState<Float32Array[]>([]);
   const [isVerifying, setIsVerifying] = useState(false);
   const [isWebcamReady, setIsWebcamReady] = useState(false);
-  const [warmupCount, setWarmupCount] = useState(0);
+  const [showCamera, setShowCamera] = useState(true);
 
   const webcamRef = useRef<Webcam>(null);
   const analyzeIntervalRef = useRef<number | null>(null);
   const blinkCountRef = useRef<number>(0);
   const actionSequenceRef = useRef<string[]>([]);
   const noFaceDetectionCountRef = useRef(0);
-  const warmupIntervalRef = useRef<number | null>(null);
   const descriptorsRef = useRef<Float32Array[]>([]);
   console.log(faceDescriptors);
   const generateActionSequence = useCallback((): string[] => {
-    const actions = ["left", "right", "blink"];
-    return actions.sort(() => 0.5 - Math.random()).slice(0, 3);
+    console.log("generateActionSequence called");
+    return ["left", "right", "blink"];
   }, []);
 
   const instructions = useMemo<Instructions>(
     () => ({
-      right: "Please turn your head to the left",
-      left: "Please turn your head to the right",
+      left: "Please slowly turn your head right ➡️",
+      right: "Please slowly turn your head left ⬅️",
       blink: (
         <div className="flex items-center">
           <img
@@ -68,7 +72,7 @@ const AuthvideoCard = () => {
             alt="Eye Blink"
             className="w-6 h-6 mr-5 ml-20 flex justify-center items-center"
           />
-          Please blink twice
+          Please blink once
         </div>
       ),
     }),
@@ -105,6 +109,7 @@ const AuthvideoCard = () => {
 
   const calculateEyeAspectRatio = useCallback(
     (eye: faceapi.Point[], otherEye: faceapi.Point[]): number => {
+      console.log("calculateEyeAspectRatio called");
       if (eye.length < 6 || otherEye.length < 6) return 1;
 
       try {
@@ -143,6 +148,7 @@ const AuthvideoCard = () => {
           >
         >
     ) => {
+      console.log("handleBlinkDetection called");
       const leftEye = detections.landmarks.getLeftEye();
       const rightEye = detections.landmarks.getRightEye();
 
@@ -154,7 +160,7 @@ const AuthvideoCard = () => {
 
       if (eyeAspectRatio < BLINK_THRESHOLD) {
         blinkCountRef.current++;
-        if (blinkCountRef.current >= 1) {
+        if (blinkCountRef.current >= 2) {
           actionCompleted();
         }
       } else if (eyeAspectRatio > OPEN_EYE_THRESHOLD) {
@@ -178,6 +184,7 @@ const AuthvideoCard = () => {
         >,
       expectedAction: string
     ) => {
+      console.log("handleHeadMovement called");
       const jawOutline = detections.landmarks.getJawOutline();
       const nose = detections.landmarks.getNose();
       const jawCenter = jawOutline[8];
@@ -201,14 +208,17 @@ const AuthvideoCard = () => {
     (descriptors: Float32Array[]): number[] => {
       if (descriptors.length === 0) return [];
 
-      const sum = descriptors.reduce((acc, curr) => {
-        for (let i = 0; i < curr.length; i++) {
-          acc[i] = (acc[i] || 0) + curr[i];
-        }
-        return acc;
-      }, new Array(128).fill(0));
+      const length = descriptors[0].length;
+      const sum = new Float32Array(length);
 
-      return sum.map((val) => val / descriptors.length);
+      for (let i = 0; i < descriptors.length; i++) {
+        const descriptor = descriptors[i];
+        for (let j = 0; j < length; j++) {
+          sum[j] += descriptor[j];
+        }
+      }
+
+      return Array.from(sum.map((val) => val / descriptors.length));
     },
     []
   );
@@ -270,7 +280,10 @@ const AuthvideoCard = () => {
 
       const result = await response.json();
       localStorage.setItem("user_id", result.user_id);
+      localStorage.setItem("name", result.name);
+      localStorage.setItem("email", result.email);
       console.log("Login successful");
+      setShowCamera(false);
       setFaceDescriptors([]);
       descriptorsRef.current = []; // Clear ref as well
       dispatch(handleFacialAuth(true));
@@ -287,164 +300,82 @@ const AuthvideoCard = () => {
   }, [dispatch, calculateAverageDescriptor]); // Note: removed faceDescriptors dependency
 
   const stopAnalysis = useCallback(() => {
+    console.log("Stopping analysis");
     setIsAnalyzing(false);
     if (analyzeIntervalRef.current) {
       clearInterval(analyzeIntervalRef.current);
       analyzeIntervalRef.current = null;
     }
-
-    if (!warmupIntervalRef.current) {
-      warmupIntervalRef.current = window.setInterval(() => {
-        void warmupAnalysis();
-      }, WARMUP_INTERVAL);
-    }
   }, []);
 
-  const analyzeFrame = useCallback(async () => {
-    if (!webcamRef.current || isVerifying) return;
+  const debouncedAnalyzeFrame = useCallback(
+    debounce(async () => {
+      if (!webcamRef.current || isVerifying) return;
 
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (!imageSrc) return;
-
-    try {
-      const img = await faceapi.fetchImage(imageSrc);
-      const detections = await faceapi
-        .detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      if (detections) {
-        noFaceDetectionCountRef.current = 0;
-        setError("");
-        const currentAction = actionSequenceRef.current[0];
-
-        setFaceDescriptors((prev) => {
-          const newDescriptors = [...prev, detections.descriptor];
-          descriptorsRef.current = newDescriptors; // Keep ref in sync
-          return newDescriptors;
-        });
-
-        if (currentAction === "blink") {
-          handleBlinkDetection(detections);
-        } else if (currentAction === "left" || currentAction === "right") {
-          handleHeadMovement(detections, currentAction);
-        }
-      } else {
-        noFaceDetectionCountRef.current++;
-        if (noFaceDetectionCountRef.current >= MAX_NO_FACE_FRAMES) {
-          setError("No face detected. Please ensure your face is visible.");
-        }
-      }
-    } catch (error) {
-      console.error("Error during face analysis:", error);
-      setError("Face analysis failed. Please try again.");
-    }
-  }, [isVerifying, handleBlinkDetection, handleHeadMovement]);
-
-  const warmupAnalysis = useCallback(async () => {
-    console.log("Warmup analysis called");
-    if (!webcamRef.current || !isModelLoaded) return;
-
-    const imageSrc = webcamRef.current.getScreenshot();
-    if (!imageSrc) return;
-
-    try {
-      const img = await faceapi.fetchImage(imageSrc);
-      await faceapi
-        .detectSingleFace(img)
-        .withFaceLandmarks()
-        .withFaceDescriptor();
-
-      setWarmupCount((prev) => {
-        const newCount = prev + 1;
-        if (newCount >= REQUIRED_WARMUP_SHOTS && warmupIntervalRef.current) {
-          clearInterval(warmupIntervalRef.current);
-          warmupIntervalRef.current = null;
-        }
-        return newCount;
-      });
-    } catch (error) {
-      console.error("Warmup analysis error:", error);
-    }
-  }, [isModelLoaded]);
-
-  const startLivenessCheck = useCallback(async () => {
-    if (!isModelLoaded || !isWebcamReady) {
-      setError("Please wait for camera and models to initialize...");
-      return;
-    }
-
-    if (warmupCount < REQUIRED_WARMUP_SHOTS) {
-      setError("Please wait, warming up camera...");
-      for (let i = warmupCount; i < REQUIRED_WARMUP_SHOTS; i++) {
-        await new Promise((resolve) => setTimeout(resolve, WARMUP_INTERVAL));
-        await warmupAnalysis();
-      }
-    }
-
-    setError("");
-    if (warmupIntervalRef.current) {
-      clearInterval(warmupIntervalRef.current);
-      warmupIntervalRef.current = null;
-    }
-
-    setFaceDescriptors([]);
-    setIsAnalyzing(true);
-    setProgress(0);
-    blinkCountRef.current = 0;
-    analyzeIntervalRef.current = window.setInterval(
-      analyzeFrame,
-      ANALYSIS_INTERVAL
-    );
-    actionSequenceRef.current = generateActionSequence();
-    setInstruction(getNextInstruction() || "");
-  }, [
-    isModelLoaded,
-    isWebcamReady,
-    warmupCount,
-    warmupAnalysis,
-    analyzeFrame,
-    generateActionSequence,
-    getNextInstruction,
-  ]);
-
-  useEffect(() => {
-    console.log("Component mounted, loading models...");
-    const loadModels = async () => {
       try {
-        await Promise.all([
-          faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL),
-          faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL),
-          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
-        ]);
-        setIsModelLoaded(true);
+        const video = webcamRef.current.video;
+        if (!video) return;
+
+        const detections = await faceapi
+          .detectSingleFace(video, ANALYSIS_OPTIONS)
+          .withFaceLandmarks(true)
+          .withFaceDescriptor();
+
+        if (detections) {
+          noFaceDetectionCountRef.current = 0;
+          setError("");
+          const currentAction = actionSequenceRef.current[0];
+
+          setFaceDescriptors((prev) => {
+            const newDescriptors = [...prev, detections.descriptor];
+            descriptorsRef.current = newDescriptors;
+            return newDescriptors;
+          });
+
+          if (currentAction === "blink") {
+            handleBlinkDetection(detections);
+          } else if (currentAction === "left" || currentAction === "right") {
+            handleHeadMovement(detections, currentAction);
+          }
+        } else {
+          noFaceDetectionCountRef.current++;
+          if (noFaceDetectionCountRef.current >= MAX_NO_FACE_FRAMES) {
+            setError("No face detected. Please ensure your face is visible.");
+          }
+        }
       } catch (error) {
-        console.error("Error loading face-api models:", error);
-        setError("Failed to load face recognition models. Please try again.");
+        console.error("Error during face analysis:", error);
+        setError("Face analysis failed. Please try again.");
       }
-    };
-    void loadModels();
+    }, 50),
+    [isVerifying, handleBlinkDetection, handleHeadMovement]
+  );
+
+  useEffect(() => {
+    // Check if models are already loaded
+    if (modelLoadingState.isLoaded) {
+      setIsModelLoaded(true);
+    } else {
+      // Check periodically if models are loaded
+      const checkInterval = setInterval(() => {
+        if (modelLoadingState.isLoaded) {
+          setIsModelLoaded(true);
+          clearInterval(checkInterval);
+        }
+        if (modelLoadingState.error) {
+          setError(modelLoadingState.error);
+          clearInterval(checkInterval);
+        }
+      }, 100);
+
+      return () => clearInterval(checkInterval);
+    }
   }, []);
 
   useEffect(() => {
-    if (
-      webcamRef.current?.video &&
-      !warmupIntervalRef.current &&
-      isModelLoaded
-    ) {
+    if (webcamRef.current?.video && isModelLoaded) {
       const handleLoadedData = () => {
         setIsWebcamReady(true);
-        if (
-          !warmupIntervalRef.current &&
-          !isAnalyzing &&
-          warmupCount < REQUIRED_WARMUP_SHOTS
-        ) {
-          warmupIntervalRef.current = window.setInterval(() => {
-            if (!isAnalyzing) {
-              void warmupAnalysis();
-            }
-          }, WARMUP_INTERVAL);
-        }
       };
 
       webcamRef.current.video.addEventListener("loadeddata", handleLoadedData);
@@ -455,25 +386,65 @@ const AuthvideoCard = () => {
         );
       };
     }
-  }, [isModelLoaded, warmupCount, isAnalyzing, warmupAnalysis]);
-
-  useEffect(() => {
-    if (warmupCount >= REQUIRED_WARMUP_SHOTS && warmupIntervalRef.current) {
-      clearInterval(warmupIntervalRef.current);
-      warmupIntervalRef.current = null;
-    }
-  }, [warmupCount]);
+  }, [isModelLoaded]);
 
   useEffect(() => {
     return () => {
-      if (warmupIntervalRef.current) {
-        clearInterval(warmupIntervalRef.current);
-      }
       if (analyzeIntervalRef.current) {
         clearInterval(analyzeIntervalRef.current);
       }
     };
   }, []);
+
+  const videoConstraints = useMemo(
+    () => ({
+      width: 640,
+      height: 480,
+      facingMode: "user",
+      frameRate: { ideal: 30 },
+    }),
+    []
+  );
+
+  const webcamComponent = useMemo(
+    () => (
+      <Webcam
+        audio={false}
+        ref={webcamRef}
+        screenshotFormat="image/jpeg"
+        videoConstraints={videoConstraints}
+        className="object-cover rounded-2xl flex justify-center items-center bg-gray-100"
+        mirrored={true}
+      />
+    ),
+    [videoConstraints]
+  );
+
+  useEffect(() => {
+    // Start automatically when both webcam and models are ready
+    if (isModelLoaded && isWebcamReady && !isAnalyzing && !showGif) {
+      console.log("Auto-starting liveness check...");
+      setError("");
+      setFaceDescriptors([]);
+      setIsAnalyzing(true);
+      setProgress(0);
+      blinkCountRef.current = 0;
+      analyzeIntervalRef.current = window.setInterval(
+        debouncedAnalyzeFrame,
+        ANALYSIS_INTERVAL
+      );
+      actionSequenceRef.current = generateActionSequence();
+      setInstruction(getNextInstruction() || "");
+    }
+  }, [
+    isModelLoaded,
+    isWebcamReady,
+    isAnalyzing,
+    showGif,
+    debouncedAnalyzeFrame,
+    generateActionSequence,
+    getNextInstruction,
+  ]);
 
   return (
     <div className="rounded-2xl overflow-hidden">
@@ -491,55 +462,14 @@ const AuthvideoCard = () => {
               <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
               <span className="text-white">Initializing Camera...</span>
             </div>
-          ) : warmupCount < REQUIRED_WARMUP_SHOTS ? (
-            <div className="w-full max-w-xs mb-4">
-              <div className="flex items-center gap-2">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent relative bottom-1" />
-                <div className="text-white text-center mb-2 ">
-                  Warming up camera...
-                </div>
-              </div>
-              <div className="w-full h-2 bg-gray-700 rounded-full">
-                <div
-                  className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full transition-all duration-300"
-                  style={{
-                    width: `${(warmupCount / REQUIRED_WARMUP_SHOTS) * 100}%`,
-                  }}
-                />
-              </div>
-            </div>
-          ) : (
-            <></>
-            // <Button
-            //   className="mb-4 bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600"
-            //   onClick={startLivenessCheck}
-            // >
-            //   Start Liveness Check
-            // </Button>
-          )}
+          ) : null}
         </div>
       )}
 
-      {/* {!showGif ? (
-        <Webcam
-          audio={false}
-          ref={webcamRef}
-          screenshotFormat="image/jpeg"
-          className="w-64 h-60 object-cover rounded-2xl flex justify-center items-center bg-gray-100 "
-        />
-      ) : null} */}
-      {!showGif && (
-        <div className="relative w-64 h-60">
-          <Webcam
-            audio={false}
-            ref={webcamRef}
-            screenshotFormat="image/jpeg"
-            className="object-cover rounded-2xl flex justify-center items-center bg-gray-100"
-          />
+      {!showGif && showCamera && (
+        <div className="relative w-64 h-52">
+          {webcamComponent}
           {!isWebcamReady && (
-            // <div className="absolute inset-0 flex justify-center items-center bg-gray-100 rounded-2xl">
-            //   <div className="animate-spin rounded-full h-8 w-8 border-4  border-purple-500 border-t-transparent " />
-            // </div>
             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-2xl">
               <div className="animate-pulse flex space-x-4">
                 <div className="rounded-full bg-slate-700 h-10 w-10"></div>
@@ -559,27 +489,17 @@ const AuthvideoCard = () => {
         </div>
       )}
 
-      {!isAnalyzing &&
-      !showGif &&
-      isModelLoaded &&
-      isWebcamReady &&
-      warmupCount >= REQUIRED_WARMUP_SHOTS ? (
-        <p
-          className="  cursor-pointer bg-gradient-to-r from-purple-500 to-pink-500 text-transparent bg-clip-text hover:from-purple-600 hover:to-pink-600"
-          onClick={startLivenessCheck}
-        >
-          Start Liveness Check
-        </p>
-      ) : null}
-
       <div className="text-white text-center">
-        {isAnalyzing && !showGif && (
+        {isAnalyzing &&
+        isModelLoaded &&
+        faceDescriptors.length > 0 &&
+        descriptorsRef.current.length > 0 ? (
           <>
-            <div className="text-white text-lg text-center">
-              <div className="mt-2 text-white text-[16px] font-[400] flex justify-center items-center">
+            <div className="text-white text-lg text-center ">
+              <div className="text-white text-[14px] font-[400] flex justify-center items-center">
                 {instruction}
               </div>
-              <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-3">
+              <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-1">
                 <div
                   className="h-full w-96 bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
                   style={{ width: `${progress}%` }}
@@ -587,7 +507,13 @@ const AuthvideoCard = () => {
               </div>
             </div>
           </>
+        ) : (
+          <div className="text-white text-[14px] font-[400] flex justify-center items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+            <span className="text-white">Initializing face detection...</span>
+          </div>
         )}
+
         {showGif && (
           <div className="rounded-lg flex justify-center items-center">
             <img
@@ -645,4 +571,6 @@ export default AuthvideoCard;
 //            v
 // +---------------------+
 // |   analyzeFrame      |
+// +---------------------+
+
 // +---------------------+

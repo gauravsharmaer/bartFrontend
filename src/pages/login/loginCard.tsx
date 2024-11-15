@@ -14,8 +14,6 @@ import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
 import { toast } from "react-toastify";
 
-
-
 const LoginCard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState("");
@@ -24,7 +22,6 @@ const LoginCard = () => {
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
-
 
   const login = async (email: string, password: string) => {
     const response = await fetch("http://localhost:4000/api/users/login", {
@@ -35,25 +32,28 @@ const LoginCard = () => {
       credentials: "include",
       body: JSON.stringify({
         email,
-        password
+        password,
       }),
     });
 
     if (!response.ok) {
       const data = await response.json();
       toast.error(data.message);
-      return
+      return;
     }
     const data = await response.json();
+    localStorage.setItem("email", JSON.stringify(data.email));
+    localStorage.setItem("user_id", JSON.stringify(data.user_id));
+    localStorage.setItem("name", JSON.stringify(data.name));
+
     toast.success(data.message);
 
     dispatch(currentProfile());
-  }
-
+  };
 
   const handleLogin = () => {
     const validationResponse = validateLoginSchema({ email, password });
-    console.log(validationResponse);
+    // console.log(validationResponse);
     if (!validationResponse.success) {
       let newEmailError = null;
       let newPasswordError = null;
@@ -75,7 +75,6 @@ const LoginCard = () => {
     setEmailError(null);
     setPasswordError(null);
     login(email, password);
-
   };
 
   const { InputType, Icon } = usePasswordToggle();
@@ -111,7 +110,7 @@ const LoginCard = () => {
               </span>
             </div>
           ) : (
-            <div className="flex items-center gap-2 text-sm font-normal justify-center mb-8">
+            <div className="flex items-center gap-2 text-sm font-normal justify-center mb-5">
               <span className="text-[#79716D]">via Photo login or</span>
               <img src={Email} alt="camera" className="w-4 h-4" />
               <span
