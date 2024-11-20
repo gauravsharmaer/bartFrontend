@@ -14,7 +14,7 @@ import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
 import { toast } from "react-toastify";
 import { API_URL } from "../../config";
-
+import OneLogin from "./OneLogin";
 const LoginCard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState("");
@@ -85,6 +85,7 @@ const LoginCard = () => {
         active={forgotPasswordPopup}
         closeForgetPasswordpage={() => setForgotPasswordPopup(false)}
       />
+
       <div className="flex justify-center items-center">
         <div className="flex flex-col gap-4">
           <div className="flex flex-col justify-center items-center">
@@ -156,6 +157,7 @@ const LoginCard = () => {
               </div>
             </>
           )}
+          <OneLogin />
           <AuthSwitcher
             text="Don't have an account?"
             href="/signup"

@@ -129,7 +129,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
       <div className="w-full">
         <div className="text-center w-full flex items-center gap-3">
           <img
-            src={profilePhoto}
+            src="https://avatar.vercel.sh/jill"
             alt="Profile"
             className="rounded-full w-10 h-10 mt-2"
           />

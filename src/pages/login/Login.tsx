@@ -1,6 +1,7 @@
 import LoginCard from "./loginCard";
 import VideoCard from "../../components/videoCard";
 import { AuthBackground } from "../../components/ui/authBackground";
+
 const Login = () => {
   return (
     <AuthBackground>

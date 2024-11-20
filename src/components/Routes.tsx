@@ -5,6 +5,7 @@ import Login from "../pages/login/Login";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 import { Navigate } from "react-router-dom";
+import OneLoginCallBack from "../pages/login/OneLoginCallBack";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
 // import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
 const AppRoutes = () => {
@@ -26,6 +27,7 @@ const AppRoutes = () => {
         path="/login"
         element={authenticated ? <Navigate to="/" /> : <Login />}
       />
+      <Route path="/callback" element={<OneLoginCallBack />} />
       <Route path="/resetPassword" element={<ResetPassword />} />
       <Route path="*" element={<h1>404 page not found</h1>} />
     </Routes>
