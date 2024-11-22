@@ -3,16 +3,28 @@ import laptopIcon from "../../assets/laptop.svg";
 import passwordIcon from "../../assets/password.svg";
 import PasswordResetUi from "./PsswordResetUi";
 import compuerIcon from "../../assets/computer-settings.svg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import wifiIcon from "../../assets/wifi.svg";
 import lightningIcon from "../../assets/Lightning.svg";
 import cleaningIcon from "../../assets/cleaning-brush.svg";
 import repairIcon from "../../assets/repair-tools.svg";
 import PlusIcon from "../../assets/plus-circle.svg";
 import IconArrow from "../../assets/arrow-circle-up.svg";
+// import
+// import ChatMessage from "./ChatMessage";
+import VerifyAuthCapture from "./VerifyAuthCapture";
 
 const Home = () => {
   const [passwordResetAgent, setPasswordResetAgent] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [showConfirmationPopup, setShowConfirmationPopup] = useState(false);
+
+  useEffect(() => {
+    if (localStorage.getItem("isFaceVerified") === "false") {
+      setShowConfirmationPopup(true);
+    }
+  }, []);
+
   return (
     <div className="w-full justify-center items-center h-screen flex flex-col p-4">
       <div className="garadientBG bg-cover bg-center justify-center w-full h-full items-center flex rounded-xl flex-col px-10">
@@ -92,6 +104,81 @@ const Home = () => {
           </div>
         )}
       </div>
+
+      {showConfirmationPopup && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className="relative w-[500px] bg-[#2C2C2E] rounded-3xl p-4">
+            <button
+              onClick={() => setShowConfirmationPopup(false)}
+              className="absolute top-1 right-4 text-xl text-white hover:text-gray-400"
+              aria-label="Close modal"
+            >
+              x
+            </button>
+            <div className="bg-[#2C2C2E] rounded-lg p-6">
+              <div className="flex flex-col items-center">
+                <h2 className="text-white/90 text-2xl font-normal mb-3">
+                  Face Description Not Found
+                </h2>
+                <p className="text-white/70 text-base mb-6">
+                  Your face description is not in our database. Would you like
+                  to add it now?
+                </p>
+                <div className="flex gap-4">
+                  <button
+                    onClick={() => {
+                      setShowConfirmationPopup(false);
+                      setShowPopup(true);
+                    }}
+                    className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    Yes, Add Now
+                  </button>
+                  <button
+                    onClick={() => setShowConfirmationPopup(false)}
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                  >
+                    No, Skip
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showPopup &&
+        localStorage.getItem("isFaceVerified") === "false" &&
+        !showConfirmationPopup && (
+          <div className="fixed inset-0 bg-black/70  flex items-center justify-center z-50">
+            <div className="relative w-[500px] bg-[#2C2C2E] rounded-3xl p-4">
+              {" "}
+              {/* Added background and rounded corners */}
+              <button
+                onClick={() => setShowPopup(false)}
+                className="absolute top-1 right-4 text-xl text-white hover:text-gray-400"
+                aria-label="Close modal"
+              >
+                x
+              </button>
+              <div className="bg-[#2C2C2E] rounded-lg p-6">
+                <div className="flex flex-col items-center">
+                  {/* <h2 className="text-white/90 text-2xl font-normal mb-3">
+          Verify Your Authentication
+        </h2>
+        <p className="text-white/70 text-base mb-6">
+          Please complete the verification process to continue
+        </p> */}
+                  <VerifyAuthCapture
+                    onVerificationComplete={() => {
+                      setShowPopup(false);
+                    }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
     </div>
   );
 };

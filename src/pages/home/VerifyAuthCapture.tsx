@@ -1,5 +1,4 @@
-//authproper new good working
-/* eslint-disable react-hooks/exhaustive-deps */
+//somewhat working tiny verify auth
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
@@ -11,18 +10,17 @@ import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
 import { TinyFaceDetectorOptions } from "face-api.js";
 import debounce from "lodash/debounce";
-import { modelLoadingState } from "../../utils/modelState";
 // import { API_URL } from "../../config";
 interface ApiError {
   message: string;
 }
 
 const MAX_NO_FACE_FRAMES = 10;
-// const MODEL_URL = "/models";
-const API_URL_FACE = `http://localhost:4000/api/users/login-with-face`;
+const MODEL_URL = "/models";
+const VERIFY_API_URL = `http://localhost:4000/api/users//update-face-descriptor`;
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.4;
-const HEAD_TURN_THRESHOLD = 0.02;
+const HEAD_TURN_THRESHOLD = 0.04;
 const ANALYSIS_INTERVAL = 500;
 const ANALYSIS_OPTIONS = new TinyFaceDetectorOptions({ inputSize: 224 });
 
@@ -36,7 +34,9 @@ interface VerifyAuthProps {
   onVerificationComplete?: () => void;
 }
 
-const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
+const VerifyAuthCapture: React.FC<VerifyAuthProps> = ({
+  onVerificationComplete,
+}) => {
   const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState("");
   const [isModelLoaded, setIsModelLoaded] = useState(false);
@@ -56,6 +56,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   const noFaceDetectionCountRef = useRef(0);
   const descriptorsRef = useRef<Float32Array[]>([]);
   console.log(faceDescriptors);
+
   const generateActionSequence = useCallback((): string[] => {
     console.log("generateActionSequence called");
     return ["left", "right", "blink"];
@@ -63,8 +64,8 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
 
   const instructions = useMemo<Instructions>(
     () => ({
-      left: "Please slowly turn your head right ➡️",
-      right: "Please slowly turn your head left ⬅️",
+      right: "Please slowly turn your head to the left ⬅️",
+      left: "Please slowly turn your head to the right ➡️",
       blink: (
         <div className="flex items-center">
           <img
@@ -72,7 +73,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
             alt="Eye Blink"
             className="w-6 h-6 mr-5 ml-20 flex justify-center items-center"
           />
-          Please blink once
+          Please blink twice
         </div>
       ),
     }),
@@ -80,6 +81,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   );
 
   const getNextInstruction = useCallback((): string | JSX.Element | null => {
+    console.log("getNextInstruction called");
     const action = actionSequenceRef.current[0];
     if (action === "Verifying...") {
       setShowGif(true);
@@ -90,6 +92,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   }, [instructions]);
 
   const actionCompleted = useCallback(() => {
+    console.log("actionCompleted called");
     actionSequenceRef.current.shift();
     setProgress((prevProgress) => {
       const newProgress = prevProgress + 100 / 3;
@@ -102,7 +105,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
       setInstruction("Verifying...");
       setIsVerifying(true);
       stopAnalysis();
-      void handlePhotoLogin();
+      void handleVerification();
     }
     blinkCountRef.current = 0;
   }, [getNextInstruction]);
@@ -160,7 +163,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
 
       if (eyeAspectRatio < BLINK_THRESHOLD) {
         blinkCountRef.current++;
-        if (blinkCountRef.current >= 2) {
+        if (blinkCountRef.current >= 1) {
           actionCompleted();
         }
       } else if (eyeAspectRatio > OPEN_EYE_THRESHOLD) {
@@ -223,15 +226,13 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
     []
   );
 
-  const handlePhotoLogin = useCallback(async () => {
+  const handleVerification = useCallback(async () => {
     try {
       setIsVerifying(true);
       console.log("Starting login process...");
 
-      // Initial wait
       await new Promise((resolve) => setTimeout(resolve, 1000));
 
-      // Get descriptors from ref
       let currentDescriptors = descriptorsRef.current;
       console.log(`Initial descriptors count: ${currentDescriptors.length}`);
 
@@ -241,7 +242,7 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
 
       while (currentDescriptors.length < MIN_DESCRIPTORS) {
         if (Date.now() - startTime > TIMEOUT) {
-          currentDescriptors = descriptorsRef.current; // One final check
+          currentDescriptors = descriptorsRef.current;
           if (currentDescriptors.length < MIN_DESCRIPTORS) {
             console.log(
               `Timeout reached with ${currentDescriptors.length} descriptors`
@@ -262,43 +263,48 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
       console.log(`Proceeding with ${currentDescriptors.length} descriptors`);
       const averageDescriptor = calculateAverageDescriptor(currentDescriptors);
 
-      const response = await fetch(API_URL_FACE, {
+      const userId = localStorage.getItem("user_id");
+      if (!userId) throw new Error("User ID not found");
+
+      const response = await fetch(VERIFY_API_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         credentials: "include",
         body: JSON.stringify({
+          userId,
           faceDescriptor: averageDescriptor,
         }),
       });
 
       if (!response.ok) {
         const errorData = (await response.json()) as ApiError;
-        throw new Error(errorData.message || "Login failed");
+        throw new Error(errorData.message || "Verification failed");
       }
 
       const result = await response.json();
-      localStorage.setItem("user_id", result.user_id);
-      localStorage.setItem("name", result.name);
-      localStorage.setItem("email", result.email);
-      localStorage.setItem("isFaceVerified", result.isFaceVerified);
-      console.log("Login successful");
-      setShowCamera(false);
-      setFaceDescriptors([]);
-      descriptorsRef.current = []; // Clear ref as well
-      dispatch(handleFacialAuth(true));
+      if (result.message === "Face descriptor updated successfully") {
+        dispatch(handleFacialAuth(true));
+        setShowCamera(false);
+        onVerificationComplete?.();
+        setFaceDescriptors([]);
+        descriptorsRef.current = [];
+        localStorage.setItem("isFaceVerified", "true");
+      } else {
+        throw new Error("Face verification failed - no match found");
+      }
     } catch (error) {
       const errorMessage =
         error instanceof Error
           ? error.message
-          : "Photo login failed. Please try again.";
+          : "Verification failed. Please try again.";
       setError(errorMessage);
-      console.error("Photo login error:", error);
+      console.error("Verification error:", error);
     } finally {
       setIsVerifying(false);
     }
-  }, [dispatch, calculateAverageDescriptor]); // Note: removed faceDescriptors dependency
+  }, [dispatch, calculateAverageDescriptor, onVerificationComplete]);
 
   const stopAnalysis = useCallback(() => {
     console.log("Stopping analysis");
@@ -353,24 +359,21 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   );
 
   useEffect(() => {
-    // Check if models are already loaded
-    if (modelLoadingState.isLoaded) {
-      setIsModelLoaded(true);
-    } else {
-      // Check periodically if models are loaded
-      const checkInterval = setInterval(() => {
-        if (modelLoadingState.isLoaded) {
-          setIsModelLoaded(true);
-          clearInterval(checkInterval);
-        }
-        if (modelLoadingState.error) {
-          setError(modelLoadingState.error);
-          clearInterval(checkInterval);
-        }
-      }, 100);
-
-      return () => clearInterval(checkInterval);
-    }
+    console.log("Component mounted, loading tiny models...");
+    const loadModels = async () => {
+      try {
+        await Promise.all([
+          faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL),
+          faceapi.nets.faceLandmark68TinyNet.loadFromUri(MODEL_URL),
+          faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL),
+        ]);
+        setIsModelLoaded(true);
+      } catch (error) {
+        console.error("Error loading face-api models:", error);
+        setError("Failed to load face recognition models. Please try again.");
+      }
+    };
+    void loadModels();
   }, []);
 
   useEffect(() => {
@@ -448,89 +451,98 @@ const AuthvideoCard: React.FC<VerifyAuthProps> = () => {
   ]);
 
   return (
-    <div className="rounded-2xl overflow-hidden">
-      {!isAnalyzing && !showGif && (
-        <div className="flex flex-col items-center gap-2 ">
-          {!isModelLoaded ? (
-            <>
-              <div className="flex items-center gap-2 mb-4">
-                <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
-                <span className="text-white">Loading ...</span>
+    <div className="flex flex-col space-y-4 w-[450px]">
+      {" "}
+      {/* Increased overall width */}
+      {/* Video Container Card */}
+      <div className="w-full bg-[#2C2C2E] rounded-xl   ">
+        {" "}
+        {/* Reduced padding */}
+        {!isAnalyzing && !showGif && (
+          <div className="flex flex-col items-center gap-2">
+            {!isModelLoaded ? (
+              <>
+                <div className="flex items-center gap-2 mb-4">
+                  <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+                  <span className="text-white">Loading ...</span>
+                </div>
+              </>
+            ) : !isWebcamReady ? (
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
+                <span className="text-white">Initializing Camera...</span>
               </div>
-            </>
-          ) : !isWebcamReady ? (
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
-              <span className="text-white">Initializing Camera...</span>
-            </div>
-          ) : null}
-        </div>
-      )}
-
-      {!showGif && showCamera && (
-        <div className="relative w-64 h-52">
-          {webcamComponent}
-          {!isWebcamReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-2xl">
-              <div className="animate-pulse flex space-x-4">
-                <div className="rounded-full bg-slate-700 h-10 w-10"></div>
-                <div className="flex-1 space-y-6 py-1">
-                  <div className="h-2 bg-slate-700 rounded"></div>
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-3 gap-4">
-                      <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-                      <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-                    </div>
+            ) : null}
+          </div>
+        )}
+        {!showGif && showCamera && (
+          <div className="relative w-full aspect-video rounded-lg overflow-hidden ring-2 ring-purple-500/30">
+            {" "}
+            {/* Enhanced video element */}
+            <div className="absolute inset-0 bg-gradient-to-t from-purple-500/10 to-transparent pointer-events-none" />{" "}
+            {/* Subtle gradient overlay */}
+            {webcamComponent}
+            {!isWebcamReady && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+                <div className="animate-pulse flex space-x-4">
+                  <div className="rounded-full bg-slate-700 h-5 w-5"></div>
+                  <div className="flex-1 space-y-6 py-1">
                     <div className="h-2 bg-slate-700 rounded"></div>
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-3 gap-4">
+                        <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+                        <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+                      </div>
+                      <div className="h-2 bg-slate-700 rounded"></div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
-        </div>
-      )}
-
-      <div className="text-white text-center">
-        {isAnalyzing &&
-        isModelLoaded &&
-        faceDescriptors.length > 0 &&
-        descriptorsRef.current.length > 0 ? (
-          <>
-            <div className="text-white text-lg text-center ">
-              <div className="text-white text-[14px] font-[400] flex justify-center items-center">
+            )}
+          </div>
+        )}
+        {showGif && (
+          <div className="w-full rounded-lg flex justify-center items-center overflow-hidden ring-2 ring-purple-500/30">
+            <img
+              src={Face}
+              alt="Verifying"
+              className="w-full aspect-video rounded-lg object-cover"
+            />
+          </div>
+        )}
+      </div>
+      {/* Instructions and Progress Card */}
+      <div className="w-full bg-[#2C2C2E] rounded-lg px-2 py-2">
+        <div className="text-white text-center">
+          {isAnalyzing &&
+          isModelLoaded &&
+          faceDescriptors.length > 0 &&
+          descriptorsRef.current.length > 0 ? (
+            <div className="space-y-3">
+              <div className="text-[16px] font-[200] flex justify-center items-center">
                 {instruction}
               </div>
-              <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-1">
+              <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden">
                 <div
-                  className="h-full w-96 bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
+                  className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
                   style={{ width: `${progress}%` }}
                 ></div>
               </div>
             </div>
-          </>
-        ) : (
-          <div className="text-white text-[14px] font-[400] flex justify-center items-center gap-2">
-            <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
-            <span className="text-white">Initializing face detection...</span>
-          </div>
-        )}
-
-        {showGif && (
-          <div className="rounded-lg flex justify-center items-center">
-            <img
-              src={Face}
-              alt="Verifying"
-              className="w-96 h-72 rounded-lg object-fill"
-            />
-          </div>
-        )}
-        {error && <div className="text-red-500 my-2">{error}</div>}
+          ) : (
+            <div className="text-[14px] font-[400] flex justify-center items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+              <span>Initializing face detection...</span>
+            </div>
+          )}
+          {error && <div className="text-red-500 mt-2">{error}</div>}
+        </div>
       </div>
     </div>
   );
 };
 
-export default AuthvideoCard;
+export default VerifyAuthCapture;
 
 //function recreation diagram
 
@@ -572,6 +584,4 @@ export default AuthvideoCard;
 //            v
 // +---------------------+
 // |   analyzeFrame      |
-// +---------------------+
-
 // +---------------------+

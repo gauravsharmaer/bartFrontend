@@ -7,6 +7,8 @@ import { RootState } from "../redux/store";
 import { Navigate } from "react-router-dom";
 import OneLoginCallBack from "../pages/login/OneLoginCallBack";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
+import Ticket from "../pages/ticket/Ticket";
+import Settings from "../pages/settings/Settings";
 // import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
 const AppRoutes = () => {
   const authenticated = useSelector<RootState>(
@@ -29,6 +31,14 @@ const AppRoutes = () => {
       />
       <Route path="/callback" element={<OneLoginCallBack />} />
       <Route path="/resetPassword" element={<ResetPassword />} />
+      <Route
+        path="/ticket"
+        element={authenticated ? <Ticket /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/settings"
+        element={authenticated ? <Settings /> : <Navigate to="/login" />}
+      />
       <Route path="*" element={<h1>404 page not found</h1>} />
     </Routes>
   );

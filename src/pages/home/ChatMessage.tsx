@@ -688,10 +688,10 @@ const ChatMessage: React.FC<ChatMessageProps> = React.memo(
               {/* Added background and rounded corners */}
               <button
                 onClick={() => setShowAuthVideoCard(false)}
-                className="absolute -top-0 right-4 text-xl text-white hover:text-gray-400"
+                className="absolute top-1 right-4 text-xl text-white hover:text-gray-400"
                 aria-label="Close modal"
               >
-                X
+                x
               </button>
               <div className="bg-[#2C2C2E] rounded-lg p-6">
                 <div className="flex flex-col items-center">

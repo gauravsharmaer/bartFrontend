@@ -13,7 +13,7 @@ import AuthvideoCard from "./AuthvideoCard";
 import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
 import { toast } from "react-toastify";
-import { API_URL } from "../../config";
+// import { API_URL } from "../../config";
 import OneLogin from "./OneLogin";
 const LoginCard = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -25,7 +25,7 @@ const LoginCard = () => {
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${API_URL}/users/login`, {
+    const response = await fetch(`http://localhost:4000/api/users/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,9 +43,10 @@ const LoginCard = () => {
       return;
     }
     const data = await response.json();
-    localStorage.setItem("email", JSON.stringify(data.email));
-    localStorage.setItem("user_id", JSON.stringify(data.user_id));
-    localStorage.setItem("name", JSON.stringify(data.name));
+    localStorage.setItem("email", data.email);
+    localStorage.setItem("user_id", data.user_id);
+    localStorage.setItem("name", data.name);
+    localStorage.setItem("isFaceVerified", data.isFaceVerified);
 
     toast.success(data.message);
 

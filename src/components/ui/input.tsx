@@ -6,11 +6,20 @@ export interface InputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
   icon?: React.ReactNode;
   error?: string | null;
+  iconPosition?: "start" | "end";
 }
 
 const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
-    { className = "", type, placeholder = "", icon, error = "", ...props },
+    {
+      className = "",
+      type,
+      placeholder = "",
+      icon,
+      error = "",
+      iconPosition = "end",
+      ...props
+    },
     ref
   ) => {
     const [isFilled, setIsFilled] = useState(false);
@@ -44,7 +53,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
             className={`h-16 rounded-full p-7 border bg-[#1D1D1D] focus:outline-none
               text-[white] peer ${
                 error ? "border-red-500" : "border-[#282829]"
-              } ${icon ? "pr-12" : ""} ${className}`}
+              } ${
+              icon ? (iconPosition === "end" ? "pr-12" : "pl-12") : ""
+            } ${className}`}
             ref={inputRef}
             placeholder=" "
             onChange={handleInputChange}
@@ -52,7 +63,9 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           />
 
           <label
-            className={`absolute left-7 top-[20%] text-[12px] transform -translate-y-1/2
+            className={`absolute ${
+              iconPosition === "start" ? "left-12" : "left-7"
+            } top-[20%] text-[12px] transform -translate-y-1/2
                text-[#AAAAAA] transition-all duration-200 cursor-text
               ${
                 isFilled
@@ -65,7 +78,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
           </label>
 
           {icon && (
-            <span className="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#69696C] cursor-pointer">
+            <span
+              className={`absolute ${
+                iconPosition === "end" ? "right-4" : "left-4"
+              } top-1/2 transform -translate-y-1/2 text-[#69696C] cursor-pointer`}
+            >
               {icon}
             </span>
           )}

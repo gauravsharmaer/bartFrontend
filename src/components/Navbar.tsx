@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import React, { useEffect } from "react";
 import {
   S3Client,
   GetObjectCommand,
@@ -15,7 +16,7 @@ import {
   MagnifyingGlass,
   GearSix,
 } from "@phosphor-icons/react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Box } from "@mui/material";
 import BART from "../assets/Bart.jpg";
 import arrow from "../assets/arrow-up-right.svg";
@@ -50,7 +51,7 @@ const menuItems: MenuItem[] = [
     icon: <ClockCounterClockwise size={16} />,
     path: "/history",
   },
-  { id: 6, name: "Tickets", icon: <Sticker size={16} />, path: "/tickets" },
+  { id: 6, name: "Tickets", icon: <Sticker size={16} />, path: "/ticket" },
   { id: 7, name: "Settings", icon: <GearSix size={16} />, path: "/settings" },
 ];
 
@@ -64,9 +65,7 @@ const s3Client = new S3Client({
 });
 
 const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
-  const [profilePhoto, setProfilePhoto] = useState<string>(
-    "path/to/default/image.jpg"
-  );
+  const location = useLocation();
 
   useEffect(() => {
     const fetchUserProfile = async (): Promise<void> => {
@@ -82,7 +81,7 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
         const userJson = JSON.parse(
           (await response.Body?.transformToString()) || "{}"
         );
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+
         const fullNameFromData = userJson.fullName || "Default Name";
 
         localStorage.setItem("oage", fullNameFromData);
@@ -95,16 +94,12 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
             Key: `facialdata/profile_images/${usernameFromStorage}.jpg`,
           });
           await s3Client.send(headCommand);
-          setProfilePhoto(profilePhotoUrl);
           localStorage.setItem("profilePhoto", profilePhotoUrl);
         } catch (error) {
           console.error("Error checking profile photo:", error);
-          setProfilePhoto("path/to/default/image.jpg");
         }
       } catch (error) {
         console.error("Error fetching user data:", error);
-
-        setProfilePhoto("path/to/default/image.jpg");
       }
     };
 
@@ -152,66 +147,70 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
           </Box>
         </div>
 
-        <nav className=" w-full">
+        <nav className="w-full">
           {menuItems.map((item) => (
-            <ListItem
-              component={Link}
-              to={item.path}
+            <div
               key={item.id}
-              sx={{
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-                padding: "10px",
-                margin: "10px 0",
-                cursor: "pointer",
-                borderRadius: "10px",
-                backgroundColor: "black",
-                width: props.collapsed ? "45px" : "auto",
-                height: props.collapsed ? "45px" : "auto",
-                marginLeft: props.collapsed ? "2px" : "auto",
-                marginRight: props.collapsed ? "auto" : "auto",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "#333333",
-                  transform: "scale(1.05)",
-                },
-              }}
               className="transition-all duration-700 ease-in-out"
             >
-              <ListItemIcon
-                sx={{
-                  color: "white",
-                  minWidth: "auto",
-                  display: "flex",
-                  justifyContent: "center",
-                  alignItems: "center",
-                  paddingLeft: props.collapsed ? "6px" : "0",
-                  margin: 0,
-                  "& .MuiSvgIcon-root": {
-                    fontSize: props.collapsed ? "20px" : "16px",
-                  },
-                }}
-                className="transition-all duration-700 ease-in-out"
-              >
-                {item.icon}
-              </ListItemIcon>
-              <ListItemText
-                primary={item.name}
-                sx={{
-                  marginLeft: "8px",
-                  visibility: props.collapsed ? "hidden" : "visible",
-                  opacity: props.collapsed ? 0 : 1,
-                  transition: "all 0.1s ease-in-out",
-                  transitionDelay: props.collapsed ? "0s" : "0.7s",
-                  "& .MuiListItemText-primary": {
-                    fontSize: "14px",
-                    fontWeight: 400,
-                  },
-                }}
-                className="transition-all duration-700 ease-in-out"
-              />
-            </ListItem>
+              <Link to={item.path}>
+                <ListItem
+                  sx={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    padding: "10px",
+                    margin: "10px 0",
+                    cursor: "pointer",
+                    borderRadius: "10px",
+                    backgroundColor:
+                      location.pathname === item.path ? "#333333" : "black",
+                    width: props.collapsed ? "45px" : "auto",
+                    height: props.collapsed ? "45px" : "auto",
+                    marginLeft: props.collapsed ? "2px" : "auto",
+                    marginRight: props.collapsed ? "auto" : "auto",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "#333333",
+                      transform: "scale(1.05)",
+                    },
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      color: "white",
+                      minWidth: "auto",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      paddingLeft: props.collapsed ? "6px" : "0",
+                      margin: 0,
+                      "& .MuiSvgIcon-root": {
+                        fontSize: props.collapsed ? "20px" : "16px",
+                      },
+                    }}
+                    className="transition-all duration-700 ease-in-out"
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={item.name}
+                    sx={{
+                      marginLeft: "8px",
+                      visibility: props.collapsed ? "hidden" : "visible",
+                      opacity: props.collapsed ? 0 : 1,
+                      transition: "all 0.1s ease-in-out",
+                      transitionDelay: props.collapsed ? "0s" : "0.7s",
+                      "& .MuiListItemText-primary": {
+                        fontSize: "14px",
+                        fontWeight: 400,
+                      },
+                    }}
+                    className="transition-all duration-700 ease-in-out"
+                  />
+                </ListItem>
+              </Link>
+            </div>
           ))}
         </nav>
       </div>
