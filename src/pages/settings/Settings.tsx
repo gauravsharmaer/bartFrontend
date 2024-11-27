@@ -20,7 +20,7 @@ export default function SettingsList() {
         ACCOUNT
       </div>
       
-      <div className="bg-[#1C1C1E] rounded-xl divide-y divide-[#292929] mx-4 sm:mx-8 md:mx-14 shadow-sm w-full md:w-[1100px] border-2 border-[#292929]">
+      <div className="bg-[#1C1C1E] rounded-xl divide-y divide-[#292929] mx-4 sm:mx-8 md:mx-14 shadow-sm  border-2 border-[#292929]">
       <div className="flex justify-between items-center p-4">
         <span className="text-white text-sm font-medium">Email</span>
         <span className="text-gray-400 text-sm font-normal">
@@ -42,7 +42,7 @@ export default function SettingsList() {
       <div className="mx-6 mt-6 mb-4 text-gray-500 text-s font-bold tracking-wider pl-3  text-left">
         ABOUT
       </div>
-      <div className="bg-[#1C1C1E] rounded-xl divide-y divide-[#292929] mx-4 sm:mx-8 md:mx-14 shadow-sm w-full md:w-[1100px] border-2 border-[#292929]">
+      <div className="bg-[#1C1C1E] rounded-xl divide-y divide-[#292929] mx-4 sm:mx-8 md:mx-14 shadow-sm border-2 border-[#292929]">
   <div className="flex justify-between items-center p-4">
     <span className="text-white text-sm sm:text-base font-medium">Help Center</span>
     <CaretRight size={16} className="text-gray-500" />
