@@ -9,6 +9,9 @@ import OneLoginCallBack from "../pages/login/OneLoginCallBack";
 import ResetPassword from "../pages/ResetPassword/ResetPassword";
 import Ticket from "../pages/ticket/Ticket";
 import Settings from "../pages/settings/Settings";
+import History from "../pages/History/History";
+import Templates from "../pages/Templates/Templates";
+import NewChat from "../pages/NewChat/NewChat";
 // import PasswordResetAgent from "../pages/passwordResetAgent/PasswordResetAgent";
 const AppRoutes = () => {
   const authenticated = useSelector<RootState>(
@@ -20,7 +23,10 @@ const AppRoutes = () => {
         path="/"
         element={authenticated ? <Home /> : <Navigate to="/login" />}
       />
-
+      <Route
+        path="/history"
+        element={authenticated ? <History /> : <Navigate to="/login" />}
+      />
       <Route
         path="/signup"
         element={authenticated ? <Navigate to="/" /> : <Signup />}
@@ -38,6 +44,14 @@ const AppRoutes = () => {
       <Route
         path="/settings"
         element={authenticated ? <Settings /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/templates"
+        element={authenticated ? <Templates /> : <Navigate to="/login" />}
+      />
+      <Route
+        path="/create"
+        element={authenticated ? <NewChat /> : <Navigate to="/login" />}
       />
       <Route path="*" element={<h1>404 page not found</h1>} />
     </Routes>

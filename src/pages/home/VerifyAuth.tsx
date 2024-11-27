@@ -1,34 +1,47 @@
-// //somewhat working tiny verify auth
 // import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 // import Webcam from "react-webcam";
 // import * as faceapi from "face-api.js";
-// import Eye from "../../assets/eye.svg";
+// // import Eye from "../../assets/eye.svg";
 // import Face from "../../assets/Face.gif";
 
 // import { useDispatch } from "react-redux";
 // import { handleFacialAuth } from "../../redux/authSlice";
 // import { AppDispatch } from "../../redux/store";
-// import { TinyFaceDetectorOptions } from "face-api.js";
+// // import { TinyFaceDetectorOptions } from "face-api.js";
 // import debounce from "lodash/debounce";
-// import { API_URL } from "../../config";
+// import { NODE_API_URL } from "../../config";
+// import {
+//   generateActionSequence,
+//   Instructions,
+//   instructions,
+//   calculateEyeAspectRatio,
+//   calculateAverageDescriptor,
+//   MAX_NO_FACE_FRAMES,
+//   MODEL_URL,
+//   BLINK_THRESHOLD,
+//   OPEN_EYE_THRESHOLD,
+//   HEAD_TURN_THRESHOLD,
+//   ANALYSIS_INTERVAL,
+//   ANALYSIS_OPTIONS,
+// } from "../../utils/VerifyAuthFunction";
 // interface ApiError {
 //   message: string;
 // }
 
-// const MAX_NO_FACE_FRAMES = 10;
-// const MODEL_URL = "/models";
-// const VERIFY_API_URL = `${API_URL}/users/verify-user-face`;
-// const BLINK_THRESHOLD = 0.3;
-// const OPEN_EYE_THRESHOLD = 0.4;
-// const HEAD_TURN_THRESHOLD = 0.04;
-// const ANALYSIS_INTERVAL = 500;
-// const ANALYSIS_OPTIONS = new TinyFaceDetectorOptions({ inputSize: 224 });
+// // const MAX_NO_FACE_FRAMES = 10;
+// // const MODEL_URL = "/models";
+// const VERIFY_API_URL = `${NODE_API_URL}/verify-user-face`;
+// // const BLINK_THRESHOLD = 0.3;
+// // const OPEN_EYE_THRESHOLD = 0.4;
+// // const HEAD_TURN_THRESHOLD = 0.04;
+// // const ANALYSIS_INTERVAL = 500;
+// // const ANALYSIS_OPTIONS = new TinyFaceDetectorOptions({ inputSize: 224 });
 
-// type Instructions = {
-//   right: string;
-//   left: string;
-//   blink: JSX.Element;
-// };
+// // type Instructions = {
+// //   right: string;
+// //   left: string;
+// //   blink: JSX.Element;
+// // };
 
 // interface VerifyAuthProps {
 //   onVerificationComplete?: () => void;
@@ -57,28 +70,28 @@
 //   const descriptorsRef = useRef<Float32Array[]>([]);
 //   console.log(faceDescriptors);
 
-//   const generateActionSequence = useCallback((): string[] => {
-//     console.log("generateActionSequence called");
-//     return ["left", "right", "blink"];
-//   }, []);
+//   // const generateActionSequence = useCallback((): string[] => {
+//   //   console.log("generateActionSequence called");
+//   //   return ["left", "right", "blink"];
+//   // }, []);
 
-//   const instructions = useMemo<Instructions>(
-//     () => ({
-//       right: "Please slowly turn your head to the left ⬅️",
-//       left: "Please slowly turn your head to the right ➡️",
-//       blink: (
-//         <div className="flex items-center">
-//           <img
-//             src={Eye}
-//             alt="Eye Blink"
-//             className="w-6 h-6 mr-5 ml-20 flex justify-center items-center"
-//           />
-//           Please blink twice
-//         </div>
-//       ),
-//     }),
-//     []
-//   );
+//   // const instructions = useMemo<Instructions>(
+//   //   () => ({
+//   //     right: "Please slowly turn your head to the left ⬅️",
+//   //     left: "Please slowly turn your head to the right ➡️",
+//   //     blink: (
+//   //       <div className="flex items-center">
+//   //         <img
+//   //           src={Eye}
+//   //           alt="Eye Blink"
+//   //           className="w-6 h-6 mr-5 ml-20 flex justify-center items-center"
+//   //         />
+//   //         Please blink twice
+//   //       </div>
+//   //     ),
+//   //   }),
+//   //   []
+//   // );
 
 //   const getNextInstruction = useCallback((): string | JSX.Element | null => {
 //     console.log("getNextInstruction called");
@@ -110,33 +123,33 @@
 //     blinkCountRef.current = 0;
 //   }, [getNextInstruction]);
 
-//   const calculateEyeAspectRatio = useCallback(
-//     (eye: faceapi.Point[], otherEye: faceapi.Point[]): number => {
-//       console.log("calculateEyeAspectRatio called");
-//       if (eye.length < 6 || otherEye.length < 6) return 1;
+//   // const calculateEyeAspectRatio = useCallback(
+//   //   (eye: faceapi.Point[], otherEye: faceapi.Point[]): number => {
+//   //     console.log("calculateEyeAspectRatio called");
+//   //     if (eye.length < 6 || otherEye.length < 6) return 1;
 
-//       try {
-//         const eyeWidth = faceapi.euclideanDistance(
-//           [eye[0].x, eye[0].y],
-//           [eye[3].x, eye[3].y]
-//         );
-//         const eyeHeight1 = faceapi.euclideanDistance(
-//           [eye[1].x, eye[1].y],
-//           [eye[5].x, eye[5].y]
-//         );
-//         const eyeHeight2 = faceapi.euclideanDistance(
-//           [eye[2].x, eye[2].y],
-//           [eye[4].x, eye[4].y]
-//         );
+//   //     try {
+//   //       const eyeWidth = faceapi.euclideanDistance(
+//   //         [eye[0].x, eye[0].y],
+//   //         [eye[3].x, eye[3].y]
+//   //       );
+//   //       const eyeHeight1 = faceapi.euclideanDistance(
+//   //         [eye[1].x, eye[1].y],
+//   //         [eye[5].x, eye[5].y]
+//   //       );
+//   //       const eyeHeight2 = faceapi.euclideanDistance(
+//   //         [eye[2].x, eye[2].y],
+//   //         [eye[4].x, eye[4].y]
+//   //       );
 
-//         return (eyeHeight1 + eyeHeight2) / (2 * eyeWidth);
-//       } catch (error) {
-//         console.error("Error calculating eye aspect ratio:", error);
-//         return 1;
-//       }
-//     },
-//     []
-//   );
+//   //       return (eyeHeight1 + eyeHeight2) / (2 * eyeWidth);
+//   //     } catch (error) {
+//   //       console.error("Error calculating eye aspect ratio:", error);
+//   //       return 1;
+//   //     }
+//   //   },
+//   //   []
+//   // );
 
 //   const handleBlinkDetection = useCallback(
 //     (
@@ -207,24 +220,24 @@
 //     [actionCompleted]
 //   );
 
-//   const calculateAverageDescriptor = useCallback(
-//     (descriptors: Float32Array[]): number[] => {
-//       if (descriptors.length === 0) return [];
+//   // const calculateAverageDescriptor = useCallback(
+//   //   (descriptors: Float32Array[]): number[] => {
+//   //     if (descriptors.length === 0) return [];
 
-//       const length = descriptors[0].length;
-//       const sum = new Float32Array(length);
+//   //     const length = descriptors[0].length;
+//   //     const sum = new Float32Array(length);
 
-//       for (let i = 0; i < descriptors.length; i++) {
-//         const descriptor = descriptors[i];
-//         for (let j = 0; j < length; j++) {
-//           sum[j] += descriptor[j];
-//         }
-//       }
+//   //     for (let i = 0; i < descriptors.length; i++) {
+//   //       const descriptor = descriptors[i];
+//   //       for (let j = 0; j < length; j++) {
+//   //         sum[j] += descriptor[j];
+//   //       }
+//   //     }
 
-//       return Array.from(sum.map((val) => val / descriptors.length));
-//     },
-//     []
-//   );
+//   //     return Array.from(sum.map((val) => val / descriptors.length));
+//   //   },
+//   //   []
+//   // );
 
 //   const handleVerification = useCallback(async () => {
 //     try {
@@ -450,82 +463,92 @@
 //   ]);
 
 //   return (
-//     <div className="rounded-2xl overflow-hidden">
-//       {!isAnalyzing && !showGif && (
-//         <div className="flex flex-col items-center gap-2 ">
-//           {!isModelLoaded ? (
-//             <>
-//               <div className="flex items-center gap-2 mb-4">
-//                 <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
-//                 <span className="text-white">Loading ...</span>
+//     <div className="flex flex-col space-y-4 w-[450px]">
+//       {" "}
+//       {/* Increased overall width */}
+//       {/* Video Container Card */}
+//       <div className="w-full bg-[#2C2C2E] rounded-xl   ">
+//         {" "}
+//         {/* Reduced padding */}
+//         {!isAnalyzing && !showGif && (
+//           <div className="flex flex-col items-center gap-2">
+//             {!isModelLoaded ? (
+//               <>
+//                 <div className="flex items-center gap-2 mb-4">
+//                   <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+//                   <span className="text-white">Loading ...</span>
+//                 </div>
+//               </>
+//             ) : !isWebcamReady ? (
+//               <div className="flex items-center gap-2">
+//                 <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
+//                 <span className="text-white">Initializing Camera...</span>
 //               </div>
-//             </>
-//           ) : !isWebcamReady ? (
-//             <div className="flex items-center gap-2">
-//               <div className="w-4 h-4 bg-red-500 animate-pulse rounded-full" />
-//               <span className="text-white">Initializing Camera...</span>
-//             </div>
-//           ) : null}
-//         </div>
-//       )}
-
-//       {!showGif && showCamera && (
-//         <div className="relative w-64 h-52">
-//           {webcamComponent}
-//           {!isWebcamReady && (
-//             <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-2xl">
-//               <div className="animate-pulse flex space-x-4">
-//                 <div className="rounded-full bg-slate-700 h-10 w-10"></div>
-//                 <div className="flex-1 space-y-6 py-1">
-//                   <div className="h-2 bg-slate-700 rounded"></div>
-//                   <div className="space-y-3">
-//                     <div className="grid grid-cols-3 gap-4">
-//                       <div className="h-2 bg-slate-700 rounded col-span-2"></div>
-//                       <div className="h-2 bg-slate-700 rounded col-span-1"></div>
-//                     </div>
+//             ) : null}
+//           </div>
+//         )}
+//         {!showGif && showCamera && (
+//           <div className="relative w-full aspect-video rounded-lg overflow-hidden ring-2 ring-purple-500/30">
+//             {" "}
+//             {/* Enhanced video element */}
+//             <div className="absolute inset-0 bg-gradient-to-t from-purple-500/10 to-transparent pointer-events-none" />{" "}
+//             {/* Subtle gradient overlay */}
+//             {webcamComponent}
+//             {!isWebcamReady && (
+//               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
+//                 <div className="animate-pulse flex space-x-4">
+//                   <div className="rounded-full bg-slate-700 h-5 w-5"></div>
+//                   <div className="flex-1 space-y-6 py-1">
 //                     <div className="h-2 bg-slate-700 rounded"></div>
+//                     <div className="space-y-3">
+//                       <div className="grid grid-cols-3 gap-4">
+//                         <div className="h-2 bg-slate-700 rounded col-span-2"></div>
+//                         <div className="h-2 bg-slate-700 rounded col-span-1"></div>
+//                       </div>
+//                       <div className="h-2 bg-slate-700 rounded"></div>
+//                     </div>
 //                   </div>
 //                 </div>
 //               </div>
-//             </div>
-//           )}
-//         </div>
-//       )}
-
-//       <div className="text-white text-center">
-//         {isAnalyzing &&
-//         isModelLoaded &&
-//         faceDescriptors.length > 0 &&
-//         descriptorsRef.current.length > 0 ? (
-//           <>
-//             <div className="text-white text-lg text-center ">
-//               <div className="text-white text-[14px] font-[400] flex justify-center items-center">
+//             )}
+//           </div>
+//         )}
+//         {showGif && (
+//           <div className="w-full rounded-lg flex justify-center items-center overflow-hidden ring-2 ring-purple-500/30">
+//             <img
+//               src={Face}
+//               alt="Verifying"
+//               className="w-full aspect-video rounded-lg object-cover"
+//             />
+//           </div>
+//         )}
+//       </div>
+//       {/* Instructions and Progress Card */}
+//       <div className="w-full bg-[#2C2C2E] rounded-lg px-2 py-2">
+//         <div className="text-white text-center">
+//           {isAnalyzing &&
+//           isModelLoaded &&
+//           faceDescriptors.length > 0 &&
+//           descriptorsRef.current.length > 0 ? (
+//             <div className="space-y-3">
+//               <div className="text-[16px] font-[200] flex justify-center items-center">
 //                 {instruction}
 //               </div>
-//               <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden my-1">
+//               <div className="w-full h-3 bg-[#282829] rounded-lg overflow-hidden">
 //                 <div
-//                   className="h-full w-96 bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
+//                   className="h-full bg-gradient-to-r from-pink-500 to-purple-500 transition-width duration-400 ease"
 //                   style={{ width: `${progress}%` }}
 //                 ></div>
 //               </div>
 //             </div>
-//           </>
-//         ) : (
-//           <div className="text-white text-[14px] font-[400] flex justify-center items-center gap-2">
-//             <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
-//             <span className="text-white">Initializing face detection...</span>
-//           </div>
-//         )}
-//         {showGif && (
-//           <div className="rounded-lg flex justify-center items-center">
-//             <img
-//               src={Face}
-//               alt="Verifying"
-//               className="w-96 h-72 rounded-lg object-fill"
-//             />
-//           </div>
-//         )}
-//         {error && <div className="text-red-500 my-2">{error}</div>}
+//           ) : (
+//             <div className="text-[14px] font-[400] flex justify-center items-center gap-2">
+//               <div className="animate-spin rounded-full h-4 w-4 border-2 border-purple-500 border-t-transparent" />
+//               <span>Initializing face detection...</span>
+//             </div>
+//           )}
+//           {error && <div className="text-red-500 mt-2">{error}</div>}
+//         </div>
 //       </div>
 //     </div>
 //   );
@@ -575,7 +598,8 @@
 // // |   analyzeFrame      |
 // // +---------------------+
 
-//somewhat working tiny verify auth
+//verify auth
+//verifyauth.ts
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Webcam from "react-webcam";
 import * as faceapi from "face-api.js";
@@ -587,14 +611,15 @@ import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
 import { TinyFaceDetectorOptions } from "face-api.js";
 import debounce from "lodash/debounce";
-// import { API_URL } from "../../config";
+import { NODE_API_URL } from "../../config";
+
 interface ApiError {
   message: string;
 }
 
 const MAX_NO_FACE_FRAMES = 10;
 const MODEL_URL = "/models";
-const VERIFY_API_URL = `http://localhost:4000/api/users/verify-user-face`;
+const VERIFY_API_URL = `${NODE_API_URL}/verify-user-face`;
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.4;
 const HEAD_TURN_THRESHOLD = 0.04;

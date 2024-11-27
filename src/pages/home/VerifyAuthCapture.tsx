@@ -1,3 +1,4 @@
+//verify auth capture
 //somewhat working tiny verify auth
 import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import Webcam from "react-webcam";
@@ -10,14 +11,14 @@ import { handleFacialAuth } from "../../redux/authSlice";
 import { AppDispatch } from "../../redux/store";
 import { TinyFaceDetectorOptions } from "face-api.js";
 import debounce from "lodash/debounce";
-// import { API_URL } from "../../config";
+import { NODE_API_URL } from "../../config";
 interface ApiError {
   message: string;
 }
 
 const MAX_NO_FACE_FRAMES = 10;
 const MODEL_URL = "/models";
-const VERIFY_API_URL = `http://localhost:4000/api/users//update-face-descriptor`;
+const VERIFY_API_URL = `${NODE_API_URL}/update-face-descriptor`;
 const BLINK_THRESHOLD = 0.3;
 const OPEN_EYE_THRESHOLD = 0.4;
 const HEAD_TURN_THRESHOLD = 0.04;

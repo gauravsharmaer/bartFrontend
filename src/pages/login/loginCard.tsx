@@ -13,6 +13,7 @@ import AuthvideoCard from "./AuthvideoCard";
 import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
 import { toast } from "react-toastify";
+import { NODE_API_URL } from "../../config";
 // import { API_URL } from "../../config";
 import OneLogin from "./OneLogin";
 const LoginCard = () => {
@@ -25,7 +26,7 @@ const LoginCard = () => {
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`http://localhost:4000/api/users/login`, {
+    const response = await fetch(`${NODE_API_URL}/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

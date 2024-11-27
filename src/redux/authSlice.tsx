@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 // import { toast } from "react-toastify";
 import { createAsyncThunk } from "@reduxjs/toolkit";
+import { NODE_API_URL } from "../config";
 // import { API_URL } from "../config";
 export interface AuthState {
   loading: boolean;
@@ -57,7 +58,7 @@ const initialState: AuthState = {
 export const currentProfile = createAsyncThunk(
   "getCurrentProfile",
   async () => {
-    const response = await fetch(`http://localhost:4000/api/users/profile`, {
+    const response = await fetch(`${NODE_API_URL}/profile`, {
       method: "GET",
       credentials: "include",
     });

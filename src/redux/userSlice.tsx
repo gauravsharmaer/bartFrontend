@@ -3,10 +3,12 @@ import type { PayloadAction } from "@reduxjs/toolkit";
 
 export interface UserState {
   value: number;
+  searchPopupOpen: boolean;
 }
 
 const initialState: UserState = {
   value: 0,
+  searchPopupOpen: false,
 };
 
 export const userSlice = createSlice({
@@ -26,11 +28,15 @@ export const userSlice = createSlice({
     incrementByAmount: (state, action: PayloadAction<number>) => {
       state.value += action.payload;
     },
+    setSearchPopupOpen: (state, action: PayloadAction<boolean>) => {
+      state.searchPopupOpen = action.payload;
+    },
   },
   extraReducers: () => {},
 });
 
 // Action creators are generated for each case reducer function
-export const { increment, decrement, incrementByAmount } = userSlice.actions;
+export const { increment, decrement, incrementByAmount, setSearchPopupOpen } =
+  userSlice.actions;
 
 export default userSlice.reducer;

@@ -1,13 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import React, { useEffect } from "react";
-import {
-  S3Client,
-  GetObjectCommand,
-  HeadObjectCommand,
-} from "@aws-sdk/client-s3";
+import React from "react";
 import { ChevronLeft, ChevronRight } from "@mui/icons-material";
 import ListItem from "@mui/material/ListItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
+
 import ListItemText from "@mui/material/ListItemText";
 import {
   Sticker,
@@ -16,95 +12,56 @@ import {
   MagnifyingGlass,
   GearSix,
 } from "@phosphor-icons/react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Box } from "@mui/material";
 import BART from "../assets/Bart.jpg";
 import arrow from "../assets/arrow-up-right.svg";
 import homeIcon from "../assets/home.svg";
-import {
-  REACT_APP_AWS_REGION,
-  REACT_APP_AWS_ACCESS_KEY_ID,
-  REACT_APP_AWS_SECRET_ACCESS_KEY,
-  REACT_APP_S3_BUCKET,
-} from "../config";
+import { useDispatch } from "react-redux";
+import { setSearchPopupOpen } from "../redux/userSlice";
 
 interface MenuItem {
   id: number;
   name: string;
   icon: React.ReactElement;
   path: string;
+  onClick?: () => void;
 }
-
-const menuItems: MenuItem[] = [
-  { id: 1, name: "Home", icon: <img src={homeIcon} alt="home" />, path: "/" },
-  { id: 2, name: "New chat", icon: <Plus size={16} />, path: "/create" },
-  {
-    id: 3,
-    name: "Search",
-    icon: <MagnifyingGlass size={16} />,
-    path: "/search",
-  },
-  { id: 4, name: "Templates", icon: <Sticker size={16} />, path: "/templates" },
-  {
-    id: 5,
-    name: "History",
-    icon: <ClockCounterClockwise size={16} />,
-    path: "/history",
-  },
-  { id: 6, name: "Tickets", icon: <Sticker size={16} />, path: "/ticket" },
-  { id: 7, name: "Settings", icon: <GearSix size={16} />, path: "/settings" },
-];
-
-// Initialize AWS S3 client
-const s3Client = new S3Client({
-  region: REACT_APP_AWS_REGION,
-  credentials: {
-    accessKeyId: REACT_APP_AWS_ACCESS_KEY_ID || "",
-    secretAccessKey: REACT_APP_AWS_SECRET_ACCESS_KEY || "",
-  },
-});
 
 const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
   const location = useLocation();
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchUserProfile = async (): Promise<void> => {
-      const usernameFromStorage = localStorage.getItem("email") || "";
-
-      try {
-        const userParams = {
-          Bucket: REACT_APP_S3_BUCKET || "",
-          Key: `facialdata/data/${usernameFromStorage}.json`,
-        };
-        const command = new GetObjectCommand(userParams);
-        const response = await s3Client.send(command);
-        const userJson = JSON.parse(
-          (await response.Body?.transformToString()) || "{}"
-        );
-
-        const fullNameFromData = userJson.fullName || "Default Name";
-
-        localStorage.setItem("oage", fullNameFromData);
-
-        const profilePhotoUrl = `https://avatar.vercel.sh/jill`;
-
-        try {
-          const headCommand = new HeadObjectCommand({
-            Bucket: REACT_APP_S3_BUCKET || "",
-            Key: `facialdata/profile_images/${usernameFromStorage}.jpg`,
-          });
-          await s3Client.send(headCommand);
-          localStorage.setItem("profilePhoto", profilePhotoUrl);
-        } catch (error) {
-          console.error("Error checking profile photo:", error);
-        }
-      } catch (error) {
-        console.error("Error fetching user data:", error);
-      }
-    };
-
-    fetchUserProfile();
-  }, []);
+  const menuItems: MenuItem[] = [
+    { id: 1, name: "Home", icon: <img src={homeIcon} alt="home" />, path: "/" },
+    { id: 2, name: "New chat", icon: <Plus size={16} />, path: "/create" },
+    {
+      id: 3,
+      name: "Search",
+      icon: <MagnifyingGlass size={16} />,
+      path: "#",
+      onClick: () => dispatch(setSearchPopupOpen(true)),
+    },
+    {
+      id: 4,
+      name: "Templates",
+      icon: <Sticker size={16} />,
+      path: "/templates",
+    },
+    {
+      id: 5,
+      name: "History",
+      icon: <ClockCounterClockwise size={16} />,
+      path: "/history",
+      onClick: () => {
+        props.onToggle();
+        navigate("/history");
+      },
+    },
+    { id: 6, name: "Tickets", icon: <Sticker size={16} />, path: "/ticket" },
+    { id: 7, name: "Settings", icon: <GearSix size={16} />, path: "/settings" },
+  ];
 
   return (
     <aside
@@ -153,8 +110,9 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
               key={item.id}
               className="transition-all duration-700 ease-in-out"
             >
-              <Link to={item.path}>
+              {item.onClick ? (
                 <ListItem
+                  onClick={item.onClick}
                   sx={{
                     flexDirection: "row",
                     alignItems: "center",
@@ -209,7 +167,65 @@ const Navbar = (props: { collapsed: boolean; onToggle: () => void }) => {
                     className="transition-all duration-700 ease-in-out"
                   />
                 </ListItem>
-              </Link>
+              ) : (
+                <Link to={item.path}>
+                  <ListItem
+                    sx={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      padding: "10px",
+                      margin: "10px 0",
+                      cursor: "pointer",
+                      borderRadius: "10px",
+                      backgroundColor:
+                        location.pathname === item.path ? "#333333" : "black",
+                      width: props.collapsed ? "45px" : "auto",
+                      height: props.collapsed ? "45px" : "auto",
+                      marginLeft: props.collapsed ? "2px" : "auto",
+                      marginRight: props.collapsed ? "auto" : "auto",
+                      color: "white",
+                      "&:hover": {
+                        backgroundColor: "#333333",
+                        transform: "scale(1.05)",
+                      },
+                    }}
+                  >
+                    <ListItemIcon
+                      sx={{
+                        color: "white",
+                        minWidth: "auto",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        paddingLeft: props.collapsed ? "6px" : "0",
+                        margin: 0,
+                        "& .MuiSvgIcon-root": {
+                          fontSize: props.collapsed ? "20px" : "16px",
+                        },
+                      }}
+                      className="transition-all duration-700 ease-in-out"
+                    >
+                      {item.icon}
+                    </ListItemIcon>
+                    <ListItemText
+                      primary={item.name}
+                      sx={{
+                        marginLeft: "8px",
+                        visibility: props.collapsed ? "hidden" : "visible",
+                        opacity: props.collapsed ? 0 : 1,
+                        transition: "all 0.1s ease-in-out",
+                        transitionDelay: props.collapsed ? "0s" : "0.7s",
+                        "& .MuiListItemText-primary": {
+                          fontSize: "14px",
+                          fontWeight: 400,
+                        },
+                      }}
+                      className="transition-all duration-700 ease-in-out"
+                    />
+                  </ListItem>
+                </Link>
+              )}
             </div>
           ))}
         </nav>
