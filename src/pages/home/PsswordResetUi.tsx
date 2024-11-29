@@ -5,15 +5,7 @@ import DotLoader from "../passwordResetAgent/DotLoader";
 import ChatLogo from "../../assets/Genie.svg";
 import PlusIcon from "../../assets/plus-circle.svg";
 import IconArrow from "../../assets/arrow-circle-up.svg";
-
-interface Message {
-  text: string;
-  isUserMessage: boolean;
-  timestamp: string;
-  button_display: boolean;
-  number_of_buttons: number;
-  button_text: string[];
-}
+import { Message } from "../../interfaces/Interface";
 
 const PasswordResetUi = () => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -21,7 +13,7 @@ const PasswordResetUi = () => {
   const [inputMessage, setInputMessage] = useState("");
   const [chatId, setChatId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-
+  console.log(messages);
   useEffect(() => {
     const initialMessage = "Hey bart reset my password";
 
