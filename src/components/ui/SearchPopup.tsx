@@ -1,5 +1,3 @@
-"use client";
-
 import { useState } from "react";
 import { Input } from "../../components/ui/input";
 import { MagnifyingGlass, X } from "@phosphor-icons/react";

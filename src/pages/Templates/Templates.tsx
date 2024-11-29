@@ -1,5 +1,3 @@
-import React from "react";
-
 const Templates = () => {
   return (
     <div className="w-full justify-center items-center h-screen flex flex-col p-4">
