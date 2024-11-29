@@ -1,39 +1,24 @@
 import { useEffect, useState } from "react";
-
+import { HistoryApiService } from "./api";
+import { chatHistory } from "./Interface/interface";
 // Add this interface at the top of the file
-interface ChatHistory {
-  id: string;
-  name: string;
-  user_id: string;
-}
+// interface ChatHistory {
+//   id: string;
+//   name: string;
+//   user_id: string;
+// }
 
 interface HistoryViewProps {
   onChatSelect: (chatId: string) => void;
 }
 
 export default function HistoryView({ onChatSelect }: HistoryViewProps) {
-  const [chatHistory, setChatHistory] = useState<ChatHistory[]>([]);
+  const [chatHistory, setChatHistory] = useState<chatHistory[]>([]);
 
   useEffect(() => {
     const fetchChatHistory = async () => {
       try {
-        const response = await fetch(
-          `https://bart-api-bd05237bdea5.herokuapp.com/chats/${localStorage.getItem(
-            "user_id"
-          )}`,
-          {
-            method: "GET",
-            headers: {
-              Accept: "application/json",
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch chat history");
-        }
-
-        const data = await response.json();
+        const data = await HistoryApiService.getUserChats();
         setChatHistory(data);
       } catch (error) {
         console.error("Error fetching chat history:", error);

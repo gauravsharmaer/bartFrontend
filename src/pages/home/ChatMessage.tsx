@@ -2,29 +2,13 @@ import React, { useState, useCallback } from "react";
 import ChatLogo from "../../assets/Genie.svg";
 import VerifyAuth from "./VerifyAuth";
 import { askBart, verifyOTP } from "./api";
-import DOMPurify from "dompurify";
 
-interface Message {
-  text: string;
-  isUserMessage: boolean;
-  timestamp: string;
-  button_display: boolean;
-  number_of_buttons: number;
-  button_text: string[];
-  showOtpInput?: boolean;
-}
-
-interface ChatMessageProps {
-  message: Message;
-  chatId: string;
-  onNewMessage: (message: Message) => void;
-}
-
-interface InlineOTPCardProps {
-  onSubmitOTP: (otp: string) => void;
-  otp: string[];
-  setOtp: React.Dispatch<React.SetStateAction<string[]>>;
-}
+import createMarkup from "../../utils/chatUtils";
+import {
+  Message,
+  ChatMessageProps,
+  InlineOTPCardProps,
+} from "../../interfaces/Interface";
 
 const InlineOTPCard: React.FC<InlineOTPCardProps> = ({
   onSubmitOTP,
@@ -118,7 +102,7 @@ const ChatMessage: React.FC<ChatMessageProps> = React.memo(
     const [showAuthVideoCard, setShowAuthVideoCard] = useState(false);
     const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
     const [clickedButton, setClickedButton] = useState<string | null>(null);
-
+    console.log(message);
     const handleVerificationComplete = useCallback(async () => {
       setShowAuthVideoCard(false);
 
@@ -240,28 +224,6 @@ const ChatMessage: React.FC<ChatMessageProps> = React.memo(
         };
         onNewMessage(errorMessage);
       }
-    };
-
-    // Configure DOMPurify to allow target="_blank" and add security attributes
-    const createMarkup = (htmlContent: string) => {
-      // Configure DOMPurify
-      DOMPurify.setConfig({
-        ADD_ATTR: ["target", "rel"], // Allow target and rel attributes
-        ALLOWED_TAGS: ["p", "a", "b", "br", "strong", "em", "span"], // Specify allowed tags
-        ALLOWED_ATTR: ["href", "target", "rel", "class"], // Specify allowed attributes
-      });
-
-      // Process the HTML content to add rel="noopener noreferrer" to all links
-      const doc = new DOMParser().parseFromString(htmlContent, "text/html");
-      doc.querySelectorAll('a[target="_blank"]').forEach((link) => {
-        link.setAttribute("rel", "noopener noreferrer");
-      });
-
-      // Get the processed HTML and sanitize it
-      const processedHtml = doc.body.innerHTML;
-      return {
-        __html: DOMPurify.sanitize(processedHtml),
-      };
     };
 
     return (

@@ -1,35 +1,29 @@
-import { SignUpInterface } from "./Interface/interface";
+import { LoginInterface } from "./Interface/Interface";
 import { NODE_API_URL } from "../../config";
-
-export const SignUpApiService = {
-  postSignUp: async (
-    name: string,
+import { toast } from "react-toastify";
+export const LoginApiService = {
+  postLogin: async (
     email: string,
-    password: string,
-    confirmPassword: string,
-    phoneNumber: string,
-    faceDescriptor: Float32Array
-  ): Promise<SignUpInterface> => {
+    password: string
+  ): Promise<LoginInterface> => {
     try {
-      const response = await fetch(`${NODE_API_URL}/register`, {
+      const response = await fetch(`${NODE_API_URL}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify({
-          name,
           email,
           password,
-          confirmPassword,
-          phoneNumber,
-          faceDescriptor: Array.from(faceDescriptor),
         }),
       });
 
       const jsonResponse = await response.json();
 
       if (!response.ok) {
-        throw new Error(jsonResponse.message || "Signup failed");
+        toast.error(jsonResponse.message || "Login failed");
+        throw new Error(jsonResponse.message || "Login failed");
       }
 
       return jsonResponse;

@@ -13,9 +13,10 @@ import AuthvideoCard from "./AuthvideoCard";
 import Email from "../../assets/Email.svg";
 import ForgotPasswordPopUp from "../../components/forgotPassword";
 import { toast } from "react-toastify";
-import { NODE_API_URL } from "../../config";
+// import { NODE_API_URL } from "../../config";
 // import { API_URL } from "../../config";
 import OneLogin from "./OneLogin";
+import { LoginApiService } from "./Api";
 const LoginCard = () => {
   const dispatch = useDispatch<AppDispatch>();
   const [email, setEmail] = useState("");
@@ -26,32 +27,50 @@ const LoginCard = () => {
   const [forgotPasswordPopup, setForgotPasswordPopup] = useState(false);
 
   const login = async (email: string, password: string) => {
-    const response = await fetch(`${NODE_API_URL}/login`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-      body: JSON.stringify({
-        email,
-        password,
-      }),
-    });
+    // const response = await fetch(`${NODE_API_URL}/login`, {
+    //   method: "POST",
+    //   headers: {
+    //     "Content-Type": "application/json",
+    //   },
+    //   credentials: "include",
+    //   body: JSON.stringify({
+    //     email,
+    //     password,
+    //   }),
+    // });
 
-    if (!response.ok) {
-      const data = await response.json();
-      toast.error(data.message);
-      return;
+    // if (!response.ok) {
+    //   const data = await response.json();
+    //   toast.error(data.message);
+    //   return;
+    // }
+    // const data = await response.json();
+    // localStorage.setItem("email", data.email);
+    // localStorage.setItem("user_id", data.user_id);
+    // localStorage.setItem("name", data.name);
+    // localStorage.setItem("isFaceVerified", data.isFaceVerified);
+
+    // toast.success(data.message);
+
+    // dispatch(currentProfile());
+    try {
+      const response = await LoginApiService.postLogin(email, password);
+      toast.success(response.message);
+      localStorage.setItem("email", response.email);
+      localStorage.setItem("user_id", response.user_id);
+      localStorage.setItem("name", response.name);
+      localStorage.setItem(
+        "isFaceVerified",
+        response.isFaceVerified.toString()
+      );
+      dispatch(currentProfile());
+    } catch (error) {
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : "An error occurred during login"
+      );
     }
-    const data = await response.json();
-    localStorage.setItem("email", data.email);
-    localStorage.setItem("user_id", data.user_id);
-    localStorage.setItem("name", data.name);
-    localStorage.setItem("isFaceVerified", data.isFaceVerified);
-
-    toast.success(data.message);
-
-    dispatch(currentProfile());
   };
 
   const handleLogin = () => {

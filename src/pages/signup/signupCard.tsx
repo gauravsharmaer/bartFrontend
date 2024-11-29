@@ -5,29 +5,35 @@ import avatar from "../../assets/Genie.svg";
 import { z } from "zod";
 import Webcam from "react-webcam";
 import { useNavigate } from "react-router-dom";
-import { validateSignUpSchema } from "../../utils/authValidate";
+// import { validateSignUpSchema } from "../../utils/authValidate";
 import { toast } from "react-toastify";
 import Stepper from "../../components/Stepper";
 import usePasswordToggle from "../../hooks/usePasswordToggle";
 import AuthSwitcher from "../../components/AuthSwitcher";
 import * as faceapi from "face-api.js";
-import { API_URL } from "../../config";
+import { SignUpApiService } from "./Api";
+// import { NODE_API_URL } from "../../config";
+import {
+  Step1Schema,
+  Step2Schema,
+  validateSignUpSchema,
+} from "./zodValidations/SignUpZodValidations";
 // Validation schemas
-const Step1Schema = z.object({
-  name: z.string().min(2, "Name must be at least 2 characters"),
-  email: z.string().email("Invalid email format"),
-  phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
-});
+// const Step1Schema = z.object({
+//   name: z.string().min(2, "Name must be at least 2 characters"),
+//   email: z.string().email("Invalid email format"),
+//   phoneNumber: z.string().min(10, "Phone number must be at least 10 digits"),
+// });
 
-const Step2Schema = z
-  .object({
-    password: z.string().min(8, "Password must be at least 8 characters"),
-    confirmPassword: z.string(),
-  })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: "Passwords don't match",
-    path: ["confirmPassword"],
-  });
+// const Step2Schema = z
+//   .object({
+//     password: z.string().min(8, "Password must be at least 8 characters"),
+//     confirmPassword: z.string(),
+//   })
+//   .refine((data) => data.password === data.confirmPassword, {
+//     message: "Passwords don't match",
+//     path: ["confirmPassword"],
+//   });
 
 const PROGRESS_MAX = 70;
 
@@ -367,29 +373,42 @@ const SignupCard = () => {
       return;
     }
 
+    // try {
+    //   const response = await fetch(`${NODE_API_URL}/register`, {
+    //     method: "POST",
+    //     headers: {
+    //       "Content-Type": "application/json",
+    //     },
+    //     body: JSON.stringify({
+    //       name,
+    //       email,
+    //       password,
+    //       confirmPassword,
+    //       phoneNumber,
+    //       faceDescriptor: Array.from(faceDescriptor),
+    //     }),
+    //   });
+
+    //   const data = await response.json();
+
+    //   if (!response.ok) {
+    //     throw new Error(data.message || "Error occurred during signup");
+    //   }
+
+    //   toast.success("Signup successful! Redirecting to login...");
+    //   setTimeout(() => {
+    //     navigate("/login");
+    //   }, 2000);
     try {
-      const response = await fetch(`${API_URL}/users/register`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-          confirmPassword,
-          phoneNumber,
-          faceDescriptor: Array.from(faceDescriptor),
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || "Error occurred during signup");
-      }
-
-      toast.success("Signup successful! Redirecting to login...");
+      const response = await SignUpApiService.postSignUp(
+        name,
+        email,
+        password,
+        confirmPassword,
+        phoneNumber,
+        faceDescriptor
+      );
+      toast.success(response.message);
       setTimeout(() => {
         navigate("/login");
       }, 2000);
